@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 3.16)
 
 # 设置vcpkg工具链文件路径
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "Vcpkg toolchain file")
+    if(DEFINED ENV{GITHUB_ACTIONS})
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{GITHUB_WORKSPACE}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "Vcpkg toolchain file")
+    else()
+        set(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "Vcpkg toolchain file")
+    endif()
 endif()
 
 project(MusicPlayer)
