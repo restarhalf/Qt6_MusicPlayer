@@ -45,8 +45,18 @@ jobs:
       run: |
         $env:PATH += ";${{env.Qt6_DIR}}/bin"
         mkdir release-package
-        copy build\Release\MusicPlayer.exe release-package\
-        windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw release-package\MusicPlayer.exe
+        # 查找实际的exe文件位置
+        $exePath = Get-ChildItem -Path "build" -Name "MusicPlayer.exe" -Recurse | Select-Object -First 1
+        if ($exePath) {
+          $fullPath = Join-Path "build" $exePath
+          Write-Host "找到可执行文件: $fullPath"
+          copy $fullPath release-package\
+          windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw release-package\MusicPlayer.exe
+        } else {
+          Write-Host "可执行文件位置检查:"
+          Get-ChildItem -Path "build" -Recurse -Include "*.exe" | ForEach-Object { Write-Host $_.FullName }
+          throw "未找到 MusicPlayer.exe 文件"
+        }
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
