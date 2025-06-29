@@ -20,6 +20,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: 98f8d00ae84819973e0605ed75eb5c3c1f346178
+        
+    - name: Install TagLib
+      run: |
+        vcpkg install taglib:x64-windows
+        
     - name: Setup Qt
       uses: jurplel/install-qt-action@v4
       with:
@@ -33,30 +42,42 @@ jobs:
 
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v2
-
+      
     - name: Configure CMake
       run: |
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="${{env.Qt6_DIR}}" -G "Visual Studio 17 2022" -A x64
+        echo "Qt6 directory: $Qt6_DIR"
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH="${Qt6_DIR}" -G "Visual Studio 17 2022" -A x64
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Deploy Qt Libraries
       run: |
-        $env:PATH += ";${{env.Qt6_DIR}}/bin"
+        $env:PATH += ";$Qt6_DIR/bin"
         mkdir release-package
-        # 查找实际的exe文件位置
-        $exePath = Get-ChildItem -Path "build" -Name "MusicPlayer.exe" -Recurse | Select-Object -First 1
-        if ($exePath) {
-          $fullPath = Join-Path "build" $exePath
-          Write-Host "找到可执行文件: $fullPath"
-          copy $fullPath release-package\
+        # Look for the executable in the expected output directory
+        $exePath = "build/Release/MusicPlayer.exe"
+        if (Test-Path $exePath) {
+          Write-Host "Found executable at: $exePath"
+          Copy-Item $exePath -Destination release-package\
           windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw release-package\MusicPlayer.exe
         } else {
-          Write-Host "可执行文件位置检查:"
+          Write-Host "Executable not found at expected location. Searching for it:"
           Get-ChildItem -Path "build" -Recurse -Include "*.exe" | ForEach-Object { Write-Host $_.FullName }
-          throw "未找到 MusicPlayer.exe 文件"
+          $foundExe = Get-ChildItem -Path "build" -Name "MusicPlayer.exe" -Recurse | Select-Object -First 1
+          if ($foundExe) {
+            $fullPath = Join-Path "build" $foundExe
+            Write-Host "Found executable at alternate location: $fullPath"
+            Copy-Item $fullPath -Destination release-package\
+            windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw release-package\MusicPlayer.exe
+          } else {
+            throw "MusicPlayer.exe not found"
+          }
         }
+        
+        # Copy TagLib DLL
+        Copy-Item "vcpkg/installed/x64-windows/bin/tag.dll" -Destination release-package\
+        Copy-Item "vcpkg/installed/x64-windows/bin/tag_c.dll" -Destination release-package\
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
