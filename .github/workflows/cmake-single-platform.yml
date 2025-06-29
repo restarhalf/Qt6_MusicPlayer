@@ -1,39 +1,98 @@
-# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
-name: CMake on a single platform
+# This workflow builds and releases the MusicPlayer application for Windows
+name: Build and Release MusicPlayer
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
+    tags: [ "v*" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  QT_VERSION: "6.9.1"
 
 jobs:
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: windows
+        target: desktop
+        arch: win64_msvc2022_64
+        tools: tools_cmake
+        cache: true
+
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v2
 
     - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="${{env.Qt6_DIR}}" -G "Visual Studio 17 2022" -A x64
 
     - name: Build
-      # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C ${{env.BUILD_TYPE}}
+    - name: Create Release Package
+      run: |
+        mkdir release-package
+        copy build\Release\MusicPlayer.exe release-package\
+        copy build\Release\*.dll release-package\
+        xcopy /E /I build\Release\plugins release-package\plugins
 
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: MusicPlayer-Windows-${{ github.sha }}
+        path: release-package/
+
+  release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: MusicPlayer-Windows-${{ github.sha }}
+        path: release-package/
+
+    - name: Create ZIP package
+      run: |
+        cd release-package
+        zip -r ../MusicPlayer-Windows-${{ github.ref_name }}.zip .
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: MusicPlayer-Windows-${{ github.ref_name }}.zip
+        name: MusicPlayer ${{ github.ref_name }}
+        body: |
+          ## 🎵 MusicPlayer ${{ github.ref_name }}
+          
+          ### 新功能
+          - 现代化的用户界面
+          - 响应式布局设计
+          - 支持FLAC和MP3格式
+          - 音量控制和播放进度控制
+          
+          ### 下载说明
+          1. 下载 `MusicPlayer-Windows-${{ github.ref_name }}.zip`
+          2. 解压到任意文件夹
+          3. 运行 `MusicPlayer.exe`
+          
+          ### 系统要求
+          - Windows 10/11 (64位)
+          - Visual C++ Redistributable 2022
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
