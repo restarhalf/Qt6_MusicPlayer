@@ -1,92 +1,70 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.16)
 project(MusicPlayer)
 
-set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Qt自动化设置
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# 确保资源文件的正确处理
-set(CMAKE_AUTORCC_OPTIONS "--compress;9")
-
-set(CMAKE_PREFIX_PATH "D:/Qt/6.9.1/msvc2022_64")
-
-find_package(Qt6 COMPONENTS
+# 查找Qt组件
+find_package(Qt6 REQUIRED COMPONENTS
         Core
         Gui
         Widgets
         Multimedia
-        REQUIRED)
+)
 
-# 显式列出资源文件以确保正确处理
-qt6_add_resources(RESOURCE_FILES res.qrc)
-
-add_executable(${PROJECT_NAME} WIN32
+# 添加可执行文件
+add_executable(MusicPlayer WIN32
         main.cpp
         musicplayer.cpp
         musicplayer.h
         musicplayer.ui
         res.qrc
-        ${RESOURCE_FILES}
 )
 
-# 确保图标资源正确链接
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
+# 链接Qt库
+target_link_libraries(MusicPlayer
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::Multimedia
 )
 
-target_link_libraries(${PROJECT_NAME}
-        Qt::Core
-        Qt::Gui
-        Qt::Widgets
-        Qt::Multimedia
+# 设置输出目录
+set_target_properties(MusicPlayer PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Release
 )
 
-if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(DEBUG_SUFFIX)
-    if (MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
-        set(DEBUG_SUFFIX "d")
-    endif ()
-    set(QT_INSTALL_PATH "${CMAKE_PREFIX_PATH}")
-    if (NOT EXISTS "${QT_INSTALL_PATH}/bin")
-        set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
-        if (NOT EXISTS "${QT_INSTALL_PATH}/bin")
-            set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
-        endif ()
-    endif ()
+# 仅在Windows且非GitHub Actions环境下复制DLL
+if(WIN32 AND NOT DEFINED ENV{GITHUB_ACTIONS})
+    # 本地开发环境的DLL复制逻辑
+    if(EXISTS "${Qt6_DIR}/../../../bin")
+        set(QT_INSTALL_PATH "${Qt6_DIR}/../../../bin")
+    elseif(EXISTS "${Qt6_DIR}/../../bin")
+        set(QT_INSTALL_PATH "${Qt6_DIR}/../../bin")
+    endif()
 
-    # 部署平台插件
-    if (EXISTS "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E make_directory
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
-    endif ()
+    if(QT_INSTALL_PATH)
+        # 复制Qt DLL到输出目录
+        foreach(QT_LIB Core Gui Widgets Multimedia Network)
+            if(EXISTS "${QT_INSTALL_PATH}/Qt6${QT_LIB}.dll")
+                add_custom_command(TARGET MusicPlayer POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${QT_INSTALL_PATH}/Qt6${QT_LIB}.dll"
+                    "$<TARGET_FILE_DIR:MusicPlayer>")
+            endif()
+        endforeach()
 
-    # 部署多媒体插件
-    if (EXISTS "${QT_INSTALL_PATH}/plugins/multimedia")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E make_directory
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/multimedia/")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/plugins/multimedia/ffmpegmediaplugin${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/multimedia/")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/plugins/multimedia/windowsmediaplugin${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/multimedia/")
-    endif ()
-
-    # 部署核心DLL文件
-    foreach (QT_LIB Core Gui Widgets Multimedia MultimediaWidgets Network)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
-    endforeach (QT_LIB)
-endif ()
+        # 复制插件目录
+        if(EXISTS "${QT_INSTALL_PATH}/../plugins")
+            add_custom_command(TARGET MusicPlayer POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${QT_INSTALL_PATH}/../plugins"
+                "$<TARGET_FILE_DIR:MusicPlayer>/plugins")
+        endif()
+    endif()
+endif()
