@@ -10,15 +10,14 @@
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QTimer>
-#include <QMediaMetaData>
 #include <QRegularExpression>
 #include <QTextStream>
 #include <QFile>
 #include <QAbstractItemView>
-#include <QItemSelectionModel>
-#include <QEventLoop>
 #include <QDebug>
+#include <QSettings>
 #include <algorithm>
+#include <random>
 #include <tag.h>
 #include <fileref.h>
 #include <tpropertymap.h>
@@ -51,18 +50,25 @@ namespace rsh
         // 初始化歌词模型
         lrcmodel->setHorizontalHeaderLabels({"歌词"});
         currentLyricIndex = -1;
+        currentIndex = -1;
         lyricTimer = new QTimer(this);
+        uiUpdateTimer = new QTimer(this);
+        playbackTimer = new QTimer(this);
+
         // 添加默认的歌词提示
         auto defaultItem = new QStandardItem("请选择歌曲播放");
         lrcmodel->appendRow(defaultItem);
 
         player->setAudioOutput(audioOutput);
         ui->voice->setMaximum(100);
+
+        // 连接播放器信号
         connect(player,&QMediaPlayer::durationChanged, [this](qint64 duration) {
             if (duration % 60000 / 1000 < 10) ui->full->setText(QString::number(duration / 60000) + ":0" + QString::number((duration % 60000) / 1000));
             else ui->full->setText(QString::number(duration / 60000) + ":" + QString::number((duration % 60000) / 1000));
             ui->bofangtiao->setMaximum(static_cast<int>(duration));
         });
+
         connect(player,&QMediaPlayer::positionChanged, [this](qint64 position) {
             if (position % 60000 / 1000 < 10) ui->now->setText(QString::number(position / 60000) + ":0" + QString::number((position % 60000) / 1000));
             else ui->now->setText(QString::number(position / 60000) + ":" + QString::number((position % 60000) / 1000));
@@ -70,9 +76,34 @@ namespace rsh
             {
                 ui->bofangtiao->setValue(static_cast<int>(position));
             }
-        });// 在构造函数的最后添加
+        });
+
+        // 连接播放完成信号
+        connect(player, &QMediaPlayer::mediaStatusChanged, [this](QMediaPlayer::MediaStatus status) {
+            if (status == QMediaPlayer::EndOfMedia) {
+                handlePlaybackFinished();
+            }
+        });
+
+        // 连接播放状态变化信号
+        connect(player, &QMediaPlayer::playbackStateChanged, [this](QMediaPlayer::PlaybackState state) {
+            updatePlaybackState();
+        });
+
+        // 启动定时器
         connect(lyricTimer, &QTimer::timeout, this, &MusicPlayer::updateCurrentLyric);
+        connect(uiUpdateTimer, &QTimer::timeout, this, &MusicPlayer::updatePlaybackState);
+        connect(playbackTimer, &QTimer::timeout, [this]() {
+            // 定期检查播放状态并更新UI
+            updateVolumeDisplay();
+        });
+
         lyricTimer->start(100); // 每100毫秒更新一次歌词
+        uiUpdateTimer->start(500); // 每500毫秒更新一次UI状态
+        playbackTimer->start(1000); // 每秒检查一次播放状态
+
+        // 加���播放器状态
+        loadPlayerState();
     }
 
     MusicPlayer::~MusicPlayer() {
@@ -102,6 +133,9 @@ namespace rsh
 
         // 加载歌词
         loadLyricsFromMetadata(filePath);
+
+        // 更新播放器信息
+        updatePlayerInfo(filePath);
 
         player->setSource(QUrl::fromLocalFile(filePath));
         ui->songName->setText(index.data(Qt::DisplayRole).toString());
@@ -217,7 +251,7 @@ namespace rsh
         return QString();
     }
 
-    // 加载歌词（优先从元数据，其次从LRC文件）
+    // 加载歌词（优先从元数据，其次从LRC文件���
     void MusicPlayer::loadLyricsFromMetadata(const QString& filePath) {
         lyrics.clear();
         lrcmodel->clear();
@@ -315,7 +349,7 @@ namespace rsh
             QString line = stream.readLine().trimmed();
             if (line.isEmpty()) continue;
 
-            // 提取歌词文本（移除时间标签）
+            // 提取歌词文本（移除时间标签��
             QString text = line;
             QRegularExpressionMatchIterator matches = timeRegex.globalMatch(line);
             while (matches.hasNext()) {
@@ -373,8 +407,12 @@ namespace rsh
         return QString(); // 未找到
     }
     void MusicPlayer::updateCurrentLyric() {
-        if (lyrics.isEmpty()) return;
+        // 如果没有播放器或歌词为空，直接返回
+        if (!player || lyrics.isEmpty()) {
+            return;
+        }
 
+        // 获取当前播放位置
         qint64 currentPosition = player->position();
         int newIndex1 = -1;
         int newIndex = -1;
@@ -413,7 +451,8 @@ namespace rsh
                     QFont font = item->font();
                     font.setBold(true);
                     item->setFont(font);
-                    item->setForeground(QBrush(Qt::red));
+                    item->setForeground(QBrush(Qt::white));
+                    item->setBackground(QBrush(Qt::blue));
                 }
                 if (currentIndex < lrcmodel->rowCount()) {
                     auto item = lrcmodel->item(currentIndex);
@@ -421,17 +460,195 @@ namespace rsh
                         QFont font = item->font();
                         font.setBold(true);
                         item->setFont(font);
-                        item->setForeground(QBrush(Qt::red));
+                        item->setForeground(QBrush(Qt::white));
+                        item->setBackground(QBrush(Qt::blue));
                     }
 
                     // 滚动到当前歌词（确保歌词在视图中央）
                     QModelIndex index = lrcmodel->index(currentLyricIndex, 0);
                     ui->lrclist->scrollTo(index, QAbstractItemView::PositionAtCenter);
 
-
                 }
             }
         }
     }
-}
 
+    // 更新播放状态
+    void MusicPlayer::updatePlaybackState() {
+        if (!player) return;
+
+        QMediaPlayer::PlaybackState state = player->playbackState();
+
+        // 根据播放状态更新按钮文本和状态
+        switch (state) {
+            case QMediaPlayer::PlayingState:
+                // 可以在这里更新播放按钮图标或文本
+                break;
+            case QMediaPlayer::PausedState:
+                // 可以在这里更新暂停按钮图标或文本
+                break;
+            case QMediaPlayer::StoppedState:
+                // 重置UI状态
+                ui->bofangtiao->setValue(0);
+                ui->now->setText("0:00");
+                currentLyricIndex = -1;
+                break;
+        }
+    }
+
+    // 更新播放器信息
+    void MusicPlayer::updatePlayerInfo(const QString& filePath) {
+        if (filePath.isEmpty()) return;
+
+        QFileInfo fileInfo(filePath);
+        QString fileName = fileInfo.completeBaseName();
+
+        // 更新当前播放歌曲索引
+        for (int i = 0; i < musicmodel->rowCount(); ++i) {
+            auto item = musicmodel->item(i);
+            if (item && item->data(Qt::UserRole + 1).toString() == filePath) {
+                currentIndex = i;
+                ui->musiclist->setCurrentIndex(musicmodel->index(i, 0));
+                break;
+            }
+        }
+
+        // 添加到播放历史
+        if (currentIndex >= 0 && (playHistory.isEmpty() || playHistory.last() != currentIndex)) {
+            playHistory.append(currentIndex);
+            historyIndex = playHistory.size() - 1;
+
+            // 限制历史记录长度
+            if (playHistory.size() > 50) {
+                playHistory.removeFirst();
+                historyIndex--;
+            }
+        }
+
+        // 保存播放状态
+        savePlayerState();
+    }
+
+    // 处理播放完成
+    void MusicPlayer::handlePlaybackFinished() {
+        switch (currentPlaybackMode) {
+            case Sequential:
+                NextBtn_clicked(); // 播放下一首
+                break;
+            case Loop:
+                player->setPosition(0); // 重新开始播放当前歌曲
+                player->play();
+                break;
+            case LoopAll:
+                NextBtn_clicked(); // 播放下一首，NextBtn_clicked已经处理了循环逻辑
+                break;
+            case Random:
+                {
+                    if (musicmodel->rowCount() > 0) {
+                        int randomIndex = rand() % musicmodel->rowCount();
+                        auto randomModelIndex = musicmodel->index(randomIndex, 0);
+                        ui->musiclist->setCurrentIndex(randomModelIndex);
+                        musicName_clicked(randomModelIndex);
+                    }
+                }
+                break;
+        }
+    }
+
+    // 更新播放模式
+    void MusicPlayer::updatePlaybackMode(PlaybackMode mode) {
+        currentPlaybackMode = mode;
+
+        // 可以在这里更���UI显示当前播放模式
+        QString modeText;
+        switch (mode) {
+            case Sequential:
+                modeText = "顺序播放";
+                break;
+            case Loop:
+                modeText = "单曲循环";
+                break;
+            case LoopAll:
+                modeText = "列表循环";
+                break;
+            case Random:
+                modeText = "随机播放";
+                break;
+        }
+
+        // 如果UI中有显示播放模式的标签，可以在这里更新
+        // ui->playModeLabel->setText(modeText);
+
+        savePlayerState();
+    }
+
+    // 刷新音乐列表
+    void MusicPlayer::refreshMusicList() {
+        // 保存当前选中的项目
+        QString currentFilePath;
+        auto currentIdx = ui->musiclist->currentIndex();
+        if (currentIdx.isValid()) {
+            currentFilePath = currentIdx.data(Qt::UserRole + 1).toString();
+        }
+
+        // 重新扫描音乐文件夹（如果需要的话）
+        // 这里可以添加自动刷新逻辑
+
+        // 恢复选中状态
+        if (!currentFilePath.isEmpty()) {
+            for (int i = 0; i < musicmodel->rowCount(); ++i) {
+                auto item = musicmodel->item(i);
+                if (item && item->data(Qt::UserRole + 1).toString() == currentFilePath) {
+                    ui->musiclist->setCurrentIndex(musicmodel->index(i, 0));
+                    break;
+                }
+            }
+        }
+    }
+
+    // 更新音量显示
+    void MusicPlayer::updateVolumeDisplay() {
+        if (audioOutput) {
+            int volume = static_cast<int>(audioOutput->volume() * 100);
+            if (ui->voice->value() != volume) {
+                ui->voice->setValue(volume);
+            }
+        }
+    }
+
+    // 保存播放器��态
+    void MusicPlayer::savePlayerState() {
+        // 这里可以保存到配置文件或注册表
+        // 包括：当前播放歌曲、播放位置、音量、播放模式等
+
+        // 示例：保存到QSettings
+        /*
+        QSettings settings;
+        settings.setValue("player/currentIndex", currentIndex);
+        settings.setValue("player/volume", audioOutput ? audioOutput->volume() : 0.5);
+        settings.setValue("player/playbackMode", static_cast<int>(currentPlaybackMode));
+        if (player) {
+            settings.setValue("player/position", player->position());
+        }
+        */
+    }
+
+    // 加载播放器状态
+    void MusicPlayer::loadPlayerState() {
+        // 从配置文件或注册表加载播放器状态
+
+        // 示例：从QSettings加载
+        /*
+        QSettings settings;
+        currentIndex = settings.value("player/currentIndex", -1).toInt();
+        float volume = settings.value("player/volume", 0.5).toFloat();
+        currentPlaybackMode = static_cast<PlaybackMode>(
+            settings.value("player/playbackMode", Sequential).toInt());
+
+        if (audioOutput) {
+            audioOutput->setVolume(volume);
+            ui->voice->setValue(static_cast<int>(volume * 100));
+        }
+        */
+    }
+}

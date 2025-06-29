@@ -49,7 +49,23 @@ private:
     QList<LyricLine> lyrics;
     int currentLyricIndex;
     int currentIndex;
+
     QTimer* lyricTimer;
+    QTimer* uiUpdateTimer;  // UI更新定时器
+    QTimer* playbackTimer;  // 播放状态检查定时器
+
+    // 播放状态管理
+    enum PlaybackMode {
+        Sequential,   // 顺序播放
+        Loop,        // 单曲循环
+        LoopAll,     // 列表循环
+        Random       // 随机播放
+    };
+    PlaybackMode currentPlaybackMode = Sequential;
+
+    // 播放列表管理
+    QList<int> playHistory;  // 播放历史
+    int historyIndex = -1;   // 历史索引
 
     // TagLib 相关方法
     QString extractLyricsFromFile(const QString& filePath);
@@ -57,7 +73,17 @@ private:
     void parseLrcFile(const QString& lrcFilePath);
     void parseLrcContent(const QString& lrcContent);
     QString findLrcFile(const QString& musicFilePath);
-void updateCurrentLyric();
+    void updateCurrentLyric();
+
+    // 新增的更新流方法
+    void updatePlaybackState();
+    void updatePlayerInfo(const QString& filePath);
+    void handlePlaybackFinished();
+    void updatePlaybackMode(PlaybackMode mode);
+    void refreshMusicList();
+    void updateVolumeDisplay();
+    void savePlayerState();
+    void loadPlayerState();
 };
 } // rsh
 

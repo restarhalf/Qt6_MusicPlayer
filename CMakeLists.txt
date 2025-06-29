@@ -26,7 +26,7 @@ find_package(Qt6 REQUIRED COMPONENTS
 find_package(taglib CONFIG REQUIRED)
 
 # 添加可执行文件
-add_executable(MusicPlayer
+add_executable(MusicPlayer WIN32
         main.cpp
         musicplayer.cpp
         musicplayer.h
