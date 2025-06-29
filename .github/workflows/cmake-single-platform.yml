@@ -10,7 +10,7 @@ on:
 
 env:
   BUILD_TYPE: Release
-  QT_VERSION: "6.9.1"
+  QT_VERSION: "6.8.1"
 
 jobs:
   build-windows:
@@ -27,6 +27,7 @@ jobs:
         host: windows
         target: desktop
         arch: win64_msvc2022_64
+        modules: 'qtmultimedia qtmultimediawidgets'
         tools: tools_cmake
         cache: true
 
@@ -40,12 +41,12 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: Create Release Package
+    - name: Deploy Qt Libraries
       run: |
+        $env:PATH += ";${{env.Qt6_DIR}}/bin"
         mkdir release-package
         copy build\Release\MusicPlayer.exe release-package\
-        copy build\Release\*.dll release-package\
-        xcopy /E /I build\Release\plugins release-package\plugins
+        windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw release-package\MusicPlayer.exe
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
@@ -79,19 +80,27 @@ jobs:
           ## 🎵 MusicPlayer ${{ github.ref_name }}
           
           ### 新功能
-          - 现代化的用户界面
-          - 响应式布局设计
-          - 支持FLAC和MP3格式
+          - 现代化的用户界面设计
+          - 响应式布局，支持窗口大小调整
+          - 支持FLAC和MP3格式音频播放
           - 音量控制和播放进度控制
+          - 歌词显示功能
           
           ### 下载说明
           1. 下载 `MusicPlayer-Windows-${{ github.ref_name }}.zip`
           2. 解压到任意文件夹
-          3. 运行 `MusicPlayer.exe`
+          3. 双击运行 `MusicPlayer.exe`
           
           ### 系统要求
           - Windows 10/11 (64位)
-          - Visual C++ Redistributable 2022
+          - 无需额外安装Qt运行时（已包含在发布包中）
+          
+          ### 使用方法
+          1. 点击"打开文件夹"选择包含音乐文件的文件夹
+          2. 双击音乐列表中的歌曲开始播放
+          3. 使用播放控制按钮控制播放
+          4. 拖拽进度条调整播放位置
+          5. 点击"Voice"按钮显示/隐藏音量控制
         draft: false
         prerelease: false
       env:
