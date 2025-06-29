@@ -10,11 +10,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # 查找Qt组件
-find_package(Qt6 REQUIRED COMPONENTS
+find_package(Qt6 COMPONENTS
         Core
         Gui
         Widgets
         Multimedia
+        REQUIRED
 )
 
 # 添加可执行文件
