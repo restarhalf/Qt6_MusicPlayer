@@ -39,6 +39,25 @@ private:
     QMediaPlayer *player=nullptr;
     QAudioOutput *audioOutput=nullptr;
     bool isSliderBeingDragged = false; // 跟踪是否正在拖动进度条
+
+    // 歌词相关
+    struct LyricLine {
+        qint64 timestamp;  // 时间戳（毫秒）
+        QString text;      // 歌词文本
+    };
+
+    QList<LyricLine> lyrics;
+    int currentLyricIndex;
+    int currentIndex;
+    QTimer* lyricTimer;
+
+    // TagLib 相关方法
+    QString extractLyricsFromFile(const QString& filePath);
+    void loadLyricsFromMetadata(const QString& filePath);
+    void parseLrcFile(const QString& lrcFilePath);
+    void parseLrcContent(const QString& lrcContent);
+    QString findLrcFile(const QString& musicFilePath);
+void updateCurrentLyric();
 };
 } // rsh
 

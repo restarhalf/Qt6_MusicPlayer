@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
+
+# 设置vcpkg工具链文件路径
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "Vcpkg toolchain file")
+endif()
+
 project(MusicPlayer)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -16,9 +23,10 @@ find_package(Qt6 REQUIRED COMPONENTS
         Widgets
         Multimedia
 )
+find_package(taglib CONFIG REQUIRED)
 
 # 添加可执行文件
-add_executable(MusicPlayer WIN32
+add_executable(MusicPlayer
         main.cpp
         musicplayer.cpp
         musicplayer.h
@@ -26,12 +34,14 @@ add_executable(MusicPlayer WIN32
         res.qrc
 )
 
-# 链接Qt库
+# 链接Qt库和TagLib
 target_link_libraries(MusicPlayer
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
         Qt6::Multimedia
+        TagLib::tag
+        TagLib::tag_c
 )
 
 # 设置输出目录

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>960</width>
-    <height>720</height>
+    <width>1492</width>
+    <height>889</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
    <string>MusicPlayer</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res.qrc">
     <normaloff>:/images/app_icon.ico</normaloff>:/images/app_icon.ico</iconset>
   </property>
   <property name="styleSheet">
@@ -180,17 +180,55 @@ QSplitter::handle:vertical {
       <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="QSplitter" name="splitter">
+      <property name="styleSheet">
+       <string notr="true">background:transparent</string>
+      </property>
       <property name="orientation">
        <enum>Qt::Orientation::Vertical</enum>
       </property>
       <widget class="QListView" name="musiclist">
+       <property name="styleSheet">
+        <string notr="true">/* 列表视图样式 */
+QListView {
+	background: rgba(0, 0, 0, 120);
+	border: 2px solid rgba(255, 255, 255, 50);
+	border-radius: 10px;
+	color: white;
+	selection-background-color: rgba(74, 144, 226, 180);
+	outline: none;
+	padding: 5px;
+}
+
+QListView::item {
+	padding: 8px;
+	border-bottom: 1px solid rgba(255, 255, 255, 30);
+	border-radius: 5px;
+	margin: 2px;
+}
+
+QListView::item:selected {
+	background: rgba(74, 144, 226, 200);
+	color: white;
+}
+
+QListView::item:hover {
+	background: rgba(255, 255, 255, 50);
+}
+</string>
+       </property>
        <property name="editTriggers">
         <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
        </property>
       </widget>
       <widget class="QLabel" name="songName">
        <property name="styleSheet">
-        <string notr="true"/>
+        <string notr="true">/* 标签样式 */
+QLabel {
+	color: black;
+	font-weight: bold;
+	background: transparent;
+	padding: 2px;
+}</string>
        </property>
        <property name="text">
         <string/>
@@ -201,18 +239,48 @@ QSplitter::handle:vertical {
       </widget>
       <widget class="QWidget" name="layoutWidget">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="spacing">
+         <number>10</number>
+        </property>
         <item>
          <widget class="QLabel" name="now">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
           <property name="text">
            <string>0:00</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="xiegang">
+          <property name="minimumSize">
+           <size>
+            <width>10</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>10</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
@@ -256,6 +324,31 @@ QSplitter::handle:vertical {
             <height>40</height>
            </size>
           </property>
+          <property name="styleSheet">
+           <string notr="true">/* 按钮样式 */
+QPushButton {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #4a90e2, stop: 1 #357abd);
+	border: 2px solid #2d5aa0;
+	border-radius: 8px;
+	color: white;
+	font-weight: bold;
+	padding: 8px 16px;
+	min-height: 20px;
+}
+
+QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #5ba0f2, stop: 1 #4080d0);
+	border: 2px solid #4a90e2;
+}
+
+QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #357abd, stop: 1 #2d5aa0);
+	border: 2px solid #1e4080;
+}</string>
+          </property>
           <property name="text">
            <string>打开文件夹</string>
           </property>
@@ -263,6 +356,31 @@ QSplitter::handle:vertical {
         </item>
         <item>
          <widget class="QPushButton" name="pauseBtn">
+          <property name="styleSheet">
+           <string notr="true">/* 按钮样式 */
+QPushButton {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #4a90e2, stop: 1 #357abd);
+	border: 2px solid #2d5aa0;
+	border-radius: 8px;
+	color: white;
+	font-weight: bold;
+	padding: 8px 16px;
+	min-height: 20px;
+}
+
+QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #5ba0f2, stop: 1 #4080d0);
+	border: 2px solid #4a90e2;
+}
+
+QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #357abd, stop: 1 #2d5aa0);
+	border: 2px solid #1e4080;
+}</string>
+          </property>
           <property name="text">
            <string>暂停</string>
           </property>
@@ -270,6 +388,31 @@ QSplitter::handle:vertical {
         </item>
         <item>
          <widget class="QPushButton" name="preBtn">
+          <property name="styleSheet">
+           <string notr="true">/* 按钮样式 */
+QPushButton {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #4a90e2, stop: 1 #357abd);
+	border: 2px solid #2d5aa0;
+	border-radius: 8px;
+	color: white;
+	font-weight: bold;
+	padding: 8px 16px;
+	min-height: 20px;
+}
+
+QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #5ba0f2, stop: 1 #4080d0);
+	border: 2px solid #4a90e2;
+}
+
+QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #357abd, stop: 1 #2d5aa0);
+	border: 2px solid #1e4080;
+}</string>
+          </property>
           <property name="text">
            <string>上一个</string>
           </property>
@@ -277,6 +420,31 @@ QSplitter::handle:vertical {
         </item>
         <item>
          <widget class="QPushButton" name="startBtn">
+          <property name="styleSheet">
+           <string notr="true">/* 按钮样式 */
+QPushButton {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #4a90e2, stop: 1 #357abd);
+	border: 2px solid #2d5aa0;
+	border-radius: 8px;
+	color: white;
+	font-weight: bold;
+	padding: 8px 16px;
+	min-height: 20px;
+}
+
+QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #5ba0f2, stop: 1 #4080d0);
+	border: 2px solid #4a90e2;
+}
+
+QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #357abd, stop: 1 #2d5aa0);
+	border: 2px solid #1e4080;
+}</string>
+          </property>
           <property name="text">
            <string>播放</string>
           </property>
@@ -286,6 +454,31 @@ QSplitter::handle:vertical {
          <widget class="QPushButton" name="nextBtn">
           <property name="autoFillBackground">
            <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">/* 按钮样式 */
+QPushButton {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #4a90e2, stop: 1 #357abd);
+	border: 2px solid #2d5aa0;
+	border-radius: 8px;
+	color: white;
+	font-weight: bold;
+	padding: 8px 16px;
+	min-height: 20px;
+}
+
+QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #5ba0f2, stop: 1 #4080d0);
+	border: 2px solid #4a90e2;
+}
+
+QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #357abd, stop: 1 #2d5aa0);
+	border: 2px solid #1e4080;
+}</string>
           </property>
           <property name="text">
            <string>下一个</string>
@@ -303,6 +496,31 @@ QSplitter::handle:vertical {
         </item>
         <item>
          <widget class="QPushButton" name="voiBtn">
+          <property name="styleSheet">
+           <string notr="true">/* 按钮样式 */
+QPushButton {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #4a90e2, stop: 1 #357abd);
+	border: 2px solid #2d5aa0;
+	border-radius: 8px;
+	color: white;
+	font-weight: bold;
+	padding: 8px 16px;
+	min-height: 20px;
+}
+
+QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #5ba0f2, stop: 1 #4080d0);
+	border: 2px solid #4a90e2;
+}
+
+QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+		stop: 0 #357abd, stop: 1 #2d5aa0);
+	border: 2px solid #1e4080;
+}</string>
+          </property>
           <property name="text">
            <string>Voice</string>
           </property>
@@ -324,12 +542,53 @@ QSplitter::handle:vertical {
        </layout>
       </widget>
      </widget>
-     <widget class="QListView" name="lrclist"/>
+     <widget class="QListView" name="lrclist">
+      <property name="styleSheet">
+       <string notr="true">background:transparent
+/* 列表视图样式 */
+QListView {
+	background: rgba(0, 0, 0, 120);
+	border: 2px solid rgba(255, 255, 255, 50);
+	border-radius: 10px;
+	color: white;
+	selection-background-color: rgba(74, 144, 226, 180);
+	outline: none;
+	padding: 5px;
+}
+
+QListView::item {
+	padding: 8px;
+	border-bottom: 1px solid rgba(255, 255, 255, 30);
+	border-radius: 5px;
+	margin: 2px;
+}
+
+QListView::item:selected {
+	background: rgba(74, 144, 226, 200);
+	color: white;
+}
+
+QListView::item:hover {
+	background: rgba(255, 255, 255, 50);
+}
+</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+      </property>
+      <property name="movement">
+       <enum>QListView::Movement::Snap</enum>
+      </property>
+      <property name="viewMode">
+       <enum>QListView::ViewMode::ListMode</enum>
+      </property>
+      <property name="itemAlignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
    </item>
   </layout>
-  <zorder>tableWidget</zorder>
-  <zorder>splitter_2</zorder>
  </widget>
  <resources>
   <include location="res.qrc"/>
@@ -352,102 +611,6 @@ QSplitter::handle:vertical {
    </hints>
   </connection>
   <connection>
-   <sender>dirBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>DirBtn_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>58</x>
-     <y>629</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>130</x>
-     <y>294</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>preBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>PrewBtn_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>228</x>
-     <y>629</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>421</x>
-     <y>497</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>voiBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>VoiceBtn_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>610</x>
-     <y>632</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>627</x>
-     <y>390</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>nextBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>NextBtn_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>507</x>
-     <y>632</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>575</x>
-     <y>498</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>StartBtn_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>405</x>
-     <y>632</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>349</x>
-     <y>379</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pauseBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>PauseBtn_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>150</x>
-     <y>629</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>205</x>
-     <y>380</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>bofangtiao</sender>
    <signal>sliderReleased()</signal>
    <receiver>rsh::MusicPlayer</receiver>
@@ -459,22 +622,6 @@ QSplitter::handle:vertical {
     </hint>
     <hint type="destinationlabel">
      <x>459</x>
-     <y>784</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>bofangtiao</sender>
-   <signal>sliderPressed()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>Audio_pressed()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>259</x>
-     <y>500</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>620</x>
      <y>784</y>
     </hint>
    </hints>
@@ -496,6 +643,70 @@ QSplitter::handle:vertical {
    </hints>
   </connection>
   <connection>
+   <sender>bofangtiao</sender>
+   <signal>sliderPressed()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>Audio_pressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>259</x>
+     <y>500</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>620</x>
+     <y>784</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pauseBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>PauseBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>150</x>
+     <y>629</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>380</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>voiBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>VoiceBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>610</x>
+     <y>632</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>627</x>
+     <y>390</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>startBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>StartBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>405</x>
+     <y>632</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>voice</sender>
    <signal>valueChanged(int)</signal>
    <receiver>rsh::MusicPlayer</receiver>
@@ -508,6 +719,54 @@ QSplitter::handle:vertical {
     <hint type="destinationlabel">
      <x>681</x>
      <y>919</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>nextBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>NextBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>507</x>
+     <y>632</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>575</x>
+     <y>498</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>PrewBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>228</x>
+     <y>629</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>421</x>
+     <y>497</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dirBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>DirBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>629</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>130</x>
+     <y>294</y>
     </hint>
    </hints>
   </connection>
