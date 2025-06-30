@@ -648,6 +648,14 @@ QPushButton:pressed {
       </widget>
      </widget>
      <widget class="QListView" name="lrclist">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1003</width>
+        <height>820</height>
+       </rect>
+      </property>
       <property name="styleSheet">
        <string notr="true">/* 歌词列表视图优化样式 */
 QListView {
