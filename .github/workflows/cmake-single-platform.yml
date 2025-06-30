@@ -30,7 +30,8 @@ jobs:
           cd $env:GITHUB_WORKSPACE\vcpkg
           .\bootstrap-vcpkg.bat -disableMetrics
           
-          # Install TagLib
+          # Install dependencies
+          .\vcpkg install zlib:x64-windows
           .\vcpkg install taglib:x64-windows
 
       - name: Setup Qt
@@ -100,21 +101,76 @@ jobs:
           $tagLibPath = "$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\bin"
           Write-Host "Copying TagLib DLLs from $tagLibPath"
           
+          # List all DLLs in vcpkg bin directory for debugging
+          Write-Host "Available DLLs in vcpkg bin directory:"
+          if (Test-Path $tagLibPath) {
+            Get-ChildItem -Path $tagLibPath -Filter "*.dll" | ForEach-Object { Write-Host "  $($_.Name)" }
+          } else {
+            Write-Host "vcpkg bin directory not found: $tagLibPath"
+          }
+          
           if (Test-Path "$tagLibPath\tag.dll") {
             Copy-Item "$tagLibPath\tag.dll" -Destination release-package\
+            Write-Host "Copied tag.dll"
           } else {
             Write-Host "Warning: tag.dll not found"
           }
           
           if (Test-Path "$tagLibPath\tag_c.dll") {
             Copy-Item "$tagLibPath\tag_c.dll" -Destination release-package\
+            Write-Host "Copied tag_c.dll"
           } else {
             Write-Host "Warning: tag_c.dll not found"
+          }
+          
+          # Copy zlib DLL (required by TagLib) - try multiple possible names
+          $zlibFound = $false
+          $zlibNames = @("zlib1.dll", "zlibd1.dll", "zlib.dll", "zlibwapi.dll")
+          
+          foreach ($zlibName in $zlibNames) {
+            if (Test-Path "$tagLibPath\$zlibName") {
+              Copy-Item "$tagLibPath\$zlibName" -Destination release-package\
+              Write-Host "Copied $zlibName"
+              $zlibFound = $true
+              # If we found zlib1.dll but under a different name, copy it as zlib1.dll too
+              if ($zlibName -ne "zlib1.dll") {
+                Copy-Item "$tagLibPath\$zlibName" -Destination "release-package\zlib1.dll"
+                Write-Host "Also copied $zlibName as zlib1.dll"
+              }
+              break
+            }
+          }
+          
+          if (-not $zlibFound) {
+            Write-Host "Warning: No zlib DLL found. Searching in vcpkg installed directory..."
+            # Search more broadly for zlib DLLs
+            $zlibSearch = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows" -Recurse -Include "zlib*.dll" -ErrorAction SilentlyContinue
+            if ($zlibSearch) {
+              foreach ($zlibFile in $zlibSearch) {
+                Write-Host "Found zlib DLL: $($zlibFile.FullName)"
+                Copy-Item $zlibFile.FullName -Destination release-package\
+                # Also copy as zlib1.dll if it's not already named that
+                if ($zlibFile.Name -ne "zlib1.dll") {
+                  Copy-Item $zlibFile.FullName -Destination "release-package\zlib1.dll"
+                  Write-Host "Also copied as zlib1.dll"
+                }
+              }
+            } else {
+              Write-Host "Error: No zlib DLL found anywhere in vcpkg installation"
+            }
           }
           
           # List files in release package for verification
           Write-Host "Files in release package:"
           Get-ChildItem -Path release-package -Recurse | ForEach-Object { Write-Host $_.FullName }
+          
+          # Check dependencies with dumpbin (optional verification)
+          Write-Host "Checking MusicPlayer.exe dependencies:"
+          try {
+            dumpbin /dependents release-package\MusicPlayer.exe
+          } catch {
+            Write-Host "dumpbin not available or failed, skipping dependency check"
+          }
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
