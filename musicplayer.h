@@ -35,6 +35,7 @@ public:
     void Audio_pressed(); // 当用户开始拖动进度条时
     void Audio_valueChanged(int value); // 当进度条值改变时
     void Voice_valueChanged(int value); // 音量调节
+    void Lrc_clicked(const QModelIndex &index); // 歌词点击槽函数
 
     // Qt6兼容的槽函数
     void onDurationChanged(qint64 duration);
@@ -56,6 +57,7 @@ private:
     QMediaPlayer *player = nullptr;
     QAudioOutput *audioOutput = nullptr;
     bool isSliderBeingDragged = false; // 跟踪是否正在拖动进度条
+    bool m_isValid = false; // 对象有效性标志
 
     // 歌词相关
     struct LyricLine {

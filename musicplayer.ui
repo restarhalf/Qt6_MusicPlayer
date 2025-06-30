@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1492</width>
-    <height>889</height>
+    <width>1488</width>
+    <height>820</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -742,11 +742,11 @@ QScrollBar::sub-page:vertical {
    <hints>
     <hint type="sourcelabel">
      <x>231</x>
-     <y>170</y>
+     <y>132</y>
     </hint>
     <hint type="destinationlabel">
-     <x>724</x>
-     <y>400</y>
+     <x>550</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -757,12 +757,12 @@ QScrollBar::sub-page:vertical {
    <slot>Audio_release()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>305</x>
-     <y>497</y>
+     <x>423</x>
+     <y>563</y>
     </hint>
     <hint type="destinationlabel">
      <x>459</x>
-     <y>784</y>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -773,12 +773,12 @@ QScrollBar::sub-page:vertical {
    <slot>Audio_valueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>197</x>
-     <y>494</y>
+     <x>315</x>
+     <y>563</y>
     </hint>
     <hint type="destinationlabel">
      <x>135</x>
-     <y>790</y>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -789,12 +789,12 @@ QScrollBar::sub-page:vertical {
    <slot>Audio_pressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>259</x>
-     <y>500</y>
+     <x>377</x>
+     <y>563</y>
     </hint>
     <hint type="destinationlabel">
-     <x>620</x>
-     <y>784</y>
+     <x>550</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -805,12 +805,12 @@ QScrollBar::sub-page:vertical {
    <slot>PauseBtn_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>150</x>
-     <y>629</y>
+     <x>168</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
      <x>205</x>
-     <y>380</y>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -821,12 +821,12 @@ QScrollBar::sub-page:vertical {
    <slot>VoiceBtn_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>610</x>
-     <y>632</y>
+     <x>795</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
-     <x>627</x>
-     <y>390</y>
+     <x>550</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -837,12 +837,12 @@ QScrollBar::sub-page:vertical {
    <slot>StartBtn_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>405</x>
-     <y>632</y>
+     <x>477</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
      <x>349</x>
-     <y>379</y>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -853,12 +853,12 @@ QScrollBar::sub-page:vertical {
    <slot>Voice_valueChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>625</x>
-     <y>658</y>
+     <x>954</x>
+     <y>607</y>
     </hint>
     <hint type="destinationlabel">
-     <x>681</x>
-     <y>919</y>
+     <x>550</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -869,12 +869,12 @@ QScrollBar::sub-page:vertical {
    <slot>NextBtn_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>507</x>
-     <y>632</y>
+     <x>636</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
-     <x>575</x>
-     <y>498</y>
+     <x>550</x>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -885,12 +885,12 @@ QScrollBar::sub-page:vertical {
    <slot>PrewBtn_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>228</x>
-     <y>629</y>
+     <x>334</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
      <x>421</x>
-     <y>497</y>
+     <y>241</y>
     </hint>
    </hints>
   </connection>
@@ -901,12 +901,44 @@ QScrollBar::sub-page:vertical {
    <slot>DirBtn_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>58</x>
-     <y>629</y>
+     <x>59</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
      <x>130</x>
-     <y>294</y>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lrclist</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>musicName_clicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1020</x>
+     <y>241</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lrclist</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>Lrc_clicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>973</x>
+     <y>521</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>520</x>
+     <y>581</y>
     </hint>
    </hints>
   </connection>
@@ -923,5 +955,6 @@ QScrollBar::sub-page:vertical {
   <slot>Audio_pressed()</slot>
   <slot>Audio_valueChanged(int)</slot>
   <slot>Voice_valueChanged(int)</slot>
+  <slot>Lrc_clicked(QModelIndex)</slot>
  </slots>
 </ui>
