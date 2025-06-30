@@ -262,13 +262,38 @@ namespace rsh
             return;
         }
 
+        // 创建一个集合来存储已存在的文件路径，提高查找效率
+        QSet<QString> existingFilePaths;
+        for (int i = 0; i < musicmodel->rowCount(); ++i) {
+            auto item = musicmodel->item(i);
+            if (item) {
+                QString existingPath = item->data(Qt::UserRole + 1).toString();
+                if (!existingPath.isEmpty()) {
+                    existingFilePaths.insert(existingPath);
+                }
+            }
+        }
+
+        int addedCount = 0; // 记录新添加的歌曲数量
         QDirIterator it(dir, {"*.flac", "*.mp3"}, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             auto info = it.nextFileInfo();
             QString filePath = info.absoluteFilePath();
-            auto item = new QStandardItem(getMusicTitle(filePath));
-            item->setData(filePath, Qt::UserRole + 1);  // 存储完整文件路径
-            musicmodel->appendRow(item);
+
+            // 检查文件路径是否已存在
+            if (!existingFilePaths.contains(filePath)) {
+                auto item = new QStandardItem(getMusicTitle(filePath));
+                item->setData(filePath, Qt::UserRole + 1);  // 存储完整文件路径
+                musicmodel->appendRow(item);
+                existingFilePaths.insert(filePath); // 添加到已存在集合中
+                addedCount++;
+            }
+        }
+
+        // 可选：显示导入结果信息
+        if (addedCount > 0) {
+            // 如果需要，可以在这里添加状态栏消息或其他提示
+            // statusBar()->showMessage(QString("成功导入 %1 首新歌曲").arg(addedCount), 3000);
         }
     }
 

@@ -415,6 +415,19 @@ QLabel {
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QSlider" name="voice">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>50</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
@@ -567,25 +580,18 @@ QLabel {
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QSlider" name="voice">
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>50</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </widget>
      <widget class="QListView" name="lrclist">
       <property name="enabled">
        <bool>true</bool>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>1100</width>
+        <height>820</height>
+       </size>
       </property>
       <property name="contextMenuPolicy">
        <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>

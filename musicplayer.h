@@ -14,6 +14,7 @@
 #include <QScrollBar>
 #include <QEvent>
 #include <QCursor>
+#include <QSet>
 
 namespace rsh {
 QT_BEGIN_NAMESPACE
