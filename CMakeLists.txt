@@ -37,6 +37,7 @@ add_executable(MusicPlayer WIN32
         musicplayer.h
         musicplayer.ui
         res.qrc
+        app_icon.rc
 )
 
 # 链接Qt库和TagLib

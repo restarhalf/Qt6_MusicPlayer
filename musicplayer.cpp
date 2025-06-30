@@ -77,7 +77,7 @@ namespace rsh
         }
 
         // 设置窗口属性
-        this->setWindowIcon(QIcon(":/images/icon.png"));
+        this->setWindowIcon(QIcon(":/images/app_icon.ico"));
         this->setMinimumSize(640, 480);
         this->setWindowFlags(Qt::Window);
 
