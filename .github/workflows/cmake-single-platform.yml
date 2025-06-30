@@ -17,110 +17,110 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup vcpkg
-      shell: powershell
-      run: |
-        # Clone vcpkg repository
-        git clone https://github.com/microsoft/vcpkg.git $env:GITHUB_WORKSPACE\vcpkg
-        
-        # Install vcpkg
-        cd $env:GITHUB_WORKSPACE\vcpkg
-        .\bootstrap-vcpkg.bat -disableMetrics
-        
-        # Install TagLib
-        .\vcpkg install taglib:x64-windows
-
-    - name: Setup Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: ${{ env.QT_VERSION }}
-        host: windows
-        target: desktop
-        arch: win64_msvc2022_64
-        modules: 'qtmultimedia'
-        tools: tools_cmake
-        cache: true
-
-    - name: Setup MSVC
-      uses: microsoft/setup-msbuild@v2
-      
-    - name: Configure CMake
-      shell: powershell
-      run: |
-        $vcpkgToolchain = "$env:GITHUB_WORKSPACE\vcpkg\scripts\buildsystems\vcpkg.cmake"
-        echo "Using vcpkg toolchain file: $vcpkgToolchain"
-        echo "Qt6 directory: $env:Qt6_DIR"
-        
-        cmake -B ${{github.workspace}}/build `
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} `
-          -DCMAKE_TOOLCHAIN_FILE="$vcpkgToolchain" `
-          -DCMAKE_PREFIX_PATH="$env:Qt6_DIR" `
-          -G "Visual Studio 17 2022" -A x64
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Deploy Qt Libraries
-      shell: powershell
-      run: |
-        # Add Qt bin directory to PATH
-        $env:PATH += ";$env:Qt6_DIR/bin"
-        
-        # Create release package directory
-        New-Item -Path release-package -ItemType Directory -Force
-        
-        # Find executable
-        $exePath = "$env:GITHUB_WORKSPACE\build\Release\MusicPlayer.exe"
-        
-        if (Test-Path $exePath) {
-          Write-Host "Found executable at expected location: $exePath"
-          Copy-Item $exePath -Destination release-package\
-        } else {
-          Write-Host "Searching for executable in build directory..."
-          $foundExe = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\build" -Recurse -Include "MusicPlayer.exe" | Select-Object -First 1
+      - name: Setup vcpkg
+        shell: powershell
+        run: |
+          # Clone vcpkg repository
+          git clone https://github.com/microsoft/vcpkg.git $env:GITHUB_WORKSPACE\vcpkg
           
-          if ($foundExe) {
-            Write-Host "Found executable at: $($foundExe.FullName)"
-            Copy-Item $foundExe.FullName -Destination release-package\
-          } else {
-            Write-Host "Executable locations in build directory:"
-            Get-ChildItem -Path "$env:GITHUB_WORKSPACE\build" -Recurse -Include "*.exe" | ForEach-Object { Write-Host $_.FullName }
-            throw "MusicPlayer.exe not found"
-          }
-        }
-        
-        # Run windeployqt
-        Write-Host "Running windeployqt..."
-        windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw release-package\MusicPlayer.exe
-        
-        # Copy TagLib DLLs
-        $tagLibPath = "$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\bin"
-        Write-Host "Copying TagLib DLLs from $tagLibPath"
-        
-        if (Test-Path "$tagLibPath\tag.dll") {
-          Copy-Item "$tagLibPath\tag.dll" -Destination release-package\
-        } else {
-          Write-Host "Warning: tag.dll not found"
-        }
-        
-        if (Test-Path "$tagLibPath\tag_c.dll") {
-          Copy-Item "$tagLibPath\tag_c.dll" -Destination release-package\
-        } else {
-          Write-Host "Warning: tag_c.dll not found"
-        }
-        
-        # List files in release package for verification
-        Write-Host "Files in release package:"
-        Get-ChildItem -Path release-package -Recurse | ForEach-Object { Write-Host $_.FullName }
+          # Install vcpkg
+          cd $env:GITHUB_WORKSPACE\vcpkg
+          .\bootstrap-vcpkg.bat -disableMetrics
+          
+          # Install TagLib
+          .\vcpkg install taglib:x64-windows
 
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: MusicPlayer-Windows-${{ github.sha }}
-        path: release-package/
+      - name: Setup Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: 'qtmultimedia'
+          tools: tools_cmake
+          cache: true
+
+      - name: Setup MSVC
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Configure CMake
+        shell: powershell
+        run: |
+          $vcpkgToolchain = "$env:GITHUB_WORKSPACE\vcpkg\scripts\buildsystems\vcpkg.cmake"
+          echo "Using vcpkg toolchain file: $vcpkgToolchain"
+          echo "Qt6 directory: $env:Qt6_DIR"
+          
+          cmake -B ${{github.workspace}}/build `
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} `
+            -DCMAKE_TOOLCHAIN_FILE="$vcpkgToolchain" `
+            -DCMAKE_PREFIX_PATH="$env:Qt6_DIR" `
+            -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+      - name: Deploy Qt Libraries
+        shell: powershell
+        run: |
+          # Add Qt bin directory to PATH
+          $env:PATH += ";$env:Qt6_DIR/bin"
+          
+          # Create release package directory
+          New-Item -Path release-package -ItemType Directory -Force
+          
+          # Find executable
+          $exePath = "$env:GITHUB_WORKSPACE\build\Release\MusicPlayer.exe"
+          
+          if (Test-Path $exePath) {
+            Write-Host "Found executable at expected location: $exePath"
+            Copy-Item $exePath -Destination release-package\
+          } else {
+            Write-Host "Searching for executable in build directory..."
+            $foundExe = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\build" -Recurse -Include "MusicPlayer.exe" | Select-Object -First 1
+          
+            if ($foundExe) {
+              Write-Host "Found executable at: $($foundExe.FullName)"
+              Copy-Item $foundExe.FullName -Destination release-package\
+            } else {
+              Write-Host "Executable locations in build directory:"
+              Get-ChildItem -Path "$env:GITHUB_WORKSPACE\build" -Recurse -Include "*.exe" | ForEach-Object { Write-Host $_.FullName }
+              throw "MusicPlayer.exe not found"
+            }
+          }
+          
+          # Run windeployqt
+          Write-Host "Running windeployqt..."
+          windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw release-package\MusicPlayer.exe
+          
+          # Copy TagLib DLLs
+          $tagLibPath = "$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\bin"
+          Write-Host "Copying TagLib DLLs from $tagLibPath"
+          
+          if (Test-Path "$tagLibPath\tag.dll") {
+            Copy-Item "$tagLibPath\tag.dll" -Destination release-package\
+          } else {
+            Write-Host "Warning: tag.dll not found"
+          }
+          
+          if (Test-Path "$tagLibPath\tag_c.dll") {
+            Copy-Item "$tagLibPath\tag_c.dll" -Destination release-package\
+          } else {
+            Write-Host "Warning: tag_c.dll not found"
+          }
+          
+          # List files in release package for verification
+          Write-Host "Files in release package:"
+          Get-ChildItem -Path release-package -Recurse | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: MusicPlayer-Windows-${{ github.sha }}
+          path: release-package/
 
   release:
     needs: build-windows
@@ -128,48 +128,48 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: MusicPlayer-Windows-${{ github.sha }}
-        path: release-package/
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: MusicPlayer-Windows-${{ github.sha }}
+          path: release-package/
 
-    - name: Create ZIP package
-      run: |
-        cd release-package
-        zip -r ../MusicPlayer-Windows-${{ github.ref_name }}.zip .
+      - name: Create ZIP package
+        run: |
+          cd release-package
+          zip -r ../MusicPlayer-Windows-${{ github.ref_name }}.zip .
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: MusicPlayer-Windows-${{ github.ref_name }}.zip
-        name: MusicPlayer ${{ github.ref_name }}
-        body: |
-          ## 🎵 MusicPlayer ${{ github.ref_name }}
-          
-          ### 新功能
-          - 现代化的用户界面设计
-          - 响应式布局，支持窗口大小调整
-          - 支持FLAC和MP3格式音频播放
-          - 音量控制和播放进度控制
-          - 歌词显示功能
-          
-          ### 下载说明
-          1. 下载 `MusicPlayer-Windows-${{ github.ref_name }}.zip`
-          2. 解压到任意文件夹
-          3. 双击运行 `MusicPlayer.exe`
-          
-          ### 系统要求
-          - Windows 10/11 (64位)
-          - 无需额外安装Qt运行时（已包含在发布包中）
-          
-          ### 使用方法
-          1. 点击"打开文件夹"选择包含音乐文件的文件夹
-          2. 双击音乐列表中的歌曲开始播放
-          3. 使用播放控制按钮控制播放
-          4. 拖拽进度条调整播放位置
-          5. 点击"Voice"按钮显示/隐藏音量控制
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: MusicPlayer-Windows-${{ github.ref_name }}.zip
+          name: MusicPlayer ${{ github.ref_name }}
+          body: |
+            ## 🎵 MusicPlayer ${{ github.ref_name }}
+            
+            ### 新功能
+            - 现代化的用户界面设计
+            - 响应式布局，支持窗口大小调整
+            - 支持FLAC和MP3格式音频播放
+            - 音量控制和播放进度控制
+            - 歌词显示功能
+            
+            ### 下载说明
+            1. 下载 `MusicPlayer-Windows-${{ github.ref_name }}.zip`
+            2. 解压到任意文件夹
+            3. 双击运行 `MusicPlayer.exe`
+            
+            ### 系统要求
+            - Windows 10/11 (64位)
+            - 无需额外安装Qt运行时（已包含在发布包中）
+            
+            ### 使用方法
+            1. 点击"打开文件夹"选择包含音乐文件的文件夹
+            2. 双击音乐列表中的歌曲开始播放
+            3. 使用播放控制按钮控制播放
+            4. 拖拽进度条调整播放位置
+            5. 点击"Voice"按钮显示/隐藏音量控制
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

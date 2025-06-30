@@ -60,52 +60,94 @@ QPushButton:pressed {
 	border: 2px solid #1e4080;
 }
 
-/* 水平滑块样式 */
+/* 水平滑块样式 - 进度条 (网易云风格) */
 QSlider::groove:horizontal {
-	border: 1px solid #999999;
-	height: 8px;
-	background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-		stop:0 #B1B1B1, stop:1 #c4c4c4);
+	border: none;
+	height: 4px;
+	background: rgba(255, 255, 255, 0.15);
 	margin: 2px 0;
-	border-radius: 4px;
+	border-radius: 2px;
 }
 
 QSlider::handle:horizontal {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-		stop:0 #b4b4b4, stop:1 #8f8f8f);
-	border: 1px solid #5c5c5c;
-	width: 18px;
-	margin: -2px 0;
-	border-radius: 9px;
+	background: #EC4141;
+	border: none;
+	width: 14px;
+	height: 14px;
+	margin: -5px 0;
+	border-radius: 7px;
 }
 
 QSlider::handle:horizontal:hover {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-		stop:0 #d4d4d4, stop:1 #afafaf);
+	background: #FF5555;
+	width: 16px;
+	height: 16px;
+	margin: -6px 0;
+	border-radius: 8px;
+	border: 2px solid rgba(236, 65, 65, 0.3);
 }
 
-/* 垂直滑块样式 */
+QSlider::handle:horizontal:pressed {
+	background: #D63031;
+	width: 12px;
+	height: 12px;
+	margin: -4px 0;
+	border-radius: 6px;
+}
+
+QSlider::sub-page:horizontal {
+	background: #EC4141;
+	border-radius: 2px;
+}
+
+QSlider::add-page:horizontal {
+	background: rgba(255, 255, 255, 0.15);
+	border-radius: 2px;
+}
+
+/* 垂直滑块样式 - 音量条 (网易云风格) */
 QSlider::groove:vertical {
-	border: 1px solid #999999;
-	width: 8px;
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-		stop:0 #B1B1B1, stop:1 #c4c4c4);
+	border: none;
+	width: 4px;
+	background: rgba(255, 255, 255, 0.15);
 	margin: 0 2px;
-	border-radius: 4px;
+	border-radius: 2px;
 }
 
 QSlider::handle:vertical {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-		stop:0 #b4b4b4, stop:1 #8f8f8f);
-	border: 1px solid #5c5c5c;
-	height: 18px;
-	margin: 0 -2px;
-	border-radius: 9px;
+	background: #EC4141;
+	border: none;
+	height: 14px;
+	width: 14px;
+	margin: 0 -5px;
+	border-radius: 7px;
 }
 
 QSlider::handle:vertical:hover {
-	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-		stop:0 #d4d4d4, stop:1 #afafaf);
+	background: #FF5555;
+	height: 16px;
+	width: 16px;
+	margin: 0 -6px;
+	border-radius: 8px;
+	border: 2px solid rgba(236, 65, 65, 0.3);
+}
+
+QSlider::handle:vertical:pressed {
+	background: #D63031;
+	height: 12px;
+	width: 12px;
+	margin: 0 -4px;
+	border-radius: 6px;
+}
+
+QSlider::sub-page:vertical {
+	background: rgba(255, 255, 255, 0.15);
+	border-radius: 2px;
+}
+
+QSlider::add-page:vertical {
+	background: #EC4141;
+	border-radius: 2px;
 }
 
 /* 列表视图样式 */
@@ -155,6 +197,69 @@ QSplitter::handle:horizontal {
 
 QSplitter::handle:vertical {
 	height: 3px;
+}
+
+/* 歌词列表视图优化样����� */
+QListView#lrclist {
+	background: rgba(0, 0, 0, 150);
+	border: 2px solid rgba(74, 144, 226, 100);
+	border-radius: 15px;
+	color: white;
+	selection-background-color: rgba(74, 144, 226, 200);
+	outline: none;
+	padding: 15px;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+QListView#lrclist::item {
+	padding: 12px 8px;
+	border: none;
+	border-radius: 8px;
+	margin: 2px 0px;
+	background: transparent;
+	color: rgba(255, 255, 255, 180);
+	text-align: center;
+}
+
+QListView#lrclist::item:hover {
+	background: rgba(255, 255, 255, 20);
+	color: rgba(255, 255, 255, 220);
+}
+
+QListView#lrclist::item:selected {
+	background: rgba(74, 144, 226, 120);
+	color: white;
+	font-weight: bold;
+}
+
+/* 滚动条美化 */
+QScrollBar:vertical {
+	background: rgba(0, 0, 0, 80);
+	width: 8px;
+	border-radius: 4px;
+	margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+	background: rgba(74, 144, 226, 150);
+	border-radius: 4px;
+	min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+	background: rgba(74, 144, 226, 200);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+	height: 0px;
+	background: none;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+	background: none;
 }
 </string>
   </property>
@@ -389,7 +494,7 @@ QPushButton:pressed {
         <item>
          <widget class="QPushButton" name="preBtn">
           <property name="styleSheet">
-           <string notr="true">/* 按钮样式 */
+           <string notr="true">/* 按��样式 */
 QPushButton {
 	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
 		stop: 0 #4a90e2, stop: 1 #357abd);
@@ -544,32 +649,67 @@ QPushButton:pressed {
      </widget>
      <widget class="QListView" name="lrclist">
       <property name="styleSheet">
-       <string notr="true">background:transparent
-/* 列表视图样式 */
+       <string notr="true">/* 歌词列表视图优化样式 */
 QListView {
-	background: rgba(0, 0, 0, 120);
-	border: 2px solid rgba(255, 255, 255, 50);
-	border-radius: 10px;
+	background: rgba(0, 0, 0, 150);
+	border: 2px solid rgba(74, 144, 226, 100);
+	border-radius: 15px;
 	color: white;
-	selection-background-color: rgba(74, 144, 226, 180);
+	selection-background-color: rgba(74, 144, 226, 200);
 	outline: none;
-	padding: 5px;
+	padding: 15px;
+	font-size: 13px;
+	line-height: 1.6;
 }
 
 QListView::item {
-	padding: 8px;
-	border-bottom: 1px solid rgba(255, 255, 255, 30);
-	border-radius: 5px;
-	margin: 2px;
-}
-
-QListView::item:selected {
-	background: rgba(74, 144, 226, 200);
-	color: white;
+	padding: 12px 8px;
+	border: none;
+	border-radius: 8px;
+	margin: 2px 0px;
+	background: transparent;
+	color: rgba(255, 255, 255, 180);
+	text-align: center;
 }
 
 QListView::item:hover {
-	background: rgba(255, 255, 255, 50);
+	background: rgba(255, 255, 255, 20);
+	color: rgba(255, 255, 255, 220);
+}
+
+QListView::item:selected {
+	background: rgba(74, 144, 226, 120);
+	color: white;
+	font-weight: bold;
+}
+
+/* 滚动条美化 */
+QScrollBar:vertical {
+	background: rgba(0, 0, 0, 80);
+	width: 8px;
+	border-radius: 4px;
+	margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+	background: rgba(74, 144, 226, 150);
+	border-radius: 4px;
+	min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+	background: rgba(74, 144, 226, 200);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+	height: 0px;
+	background: none;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+	background: none;
 }
 </string>
       </property>
