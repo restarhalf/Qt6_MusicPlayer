@@ -12,6 +12,8 @@
 #include <QPropertyAnimation>
 #include <QGraphicsOpacityEffect>
 #include <QScrollBar>
+#include <QEvent>
+#include <QCursor>
 
 namespace rsh {
 QT_BEGIN_NAMESPACE
@@ -26,7 +28,6 @@ public:
     public slots:
     void DirBtn_clicked();
     void musicName_clicked(const QModelIndex &index);
-    void PauseBtn_clicked();
     void StartBtn_clicked();
     void PrewBtn_clicked();
     void NextBtn_clicked();
@@ -48,7 +49,16 @@ public:
     void updatePlaybackState();
     void updateVolumeDisplay();
 
-QString getMusicTitle(const QString& filePath);
+    // 音量控制事件处理
+    void onVolumeButtonEntered(); // 鼠标进入音量按钮
+    void onVolumeButtonLeft(); // 鼠标离开音量按钮
+    void onVolumeSliderEntered(); // 鼠标进入音量滑块
+    void onVolumeSliderLeft(); // 鼠标离开音量滑块
+
+    QString getMusicTitle(const QString& filePath);
+    QString getArtistName(const QString& filePath);
+    QString getAlbumName(const QString& filePath);
+    void updateMusicInfo(const QString& filePath);
 
 private:
     Ui::MusicPlayer *ui;
@@ -111,9 +121,22 @@ private:
     QGraphicsOpacityEffect *opacityEffect = nullptr;
     QScrollBar *scrollBar = nullptr;
 
+    // 音量控制相关
+    int lastVolume = 50;  // ���音前的音量值
+    bool isMuted = false; // 静音状态
+    QTimer* volumeHideTimer = nullptr; // 音量滑块自动隐藏定时器
+    bool isVolumeSliderBeingDragged = false; // 跟踪音量滑块是否正在被拖拽
+
     void setupAnimations();
     void fadeInWidget(QWidget *widget, int duration);
     void fadeOutWidget(QWidget *widget, int duration);
+    void updateVolumeIcon(int volume); // 更新音量���标
+    void showVolumeSlider(); // 显示音量滑块
+    void hideVolumeSlider(); // 隐藏音量滑块
+
+protected:
+    // 事件过滤器，处理鼠标悬停事件
+    bool eventFilter(QObject *obj, QEvent *event) override;
 };
 } // rsh
 

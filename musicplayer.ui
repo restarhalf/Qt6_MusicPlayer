@@ -36,31 +36,32 @@
 	font-family: &quot;Microsoft YaHei UI&quot;, &quot;幼圆&quot;;
 }
 
-/* 按钮样式 */
+
+
+/* 按钮样式 - 透明背景以继承父组件背景 */
 QPushButton {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #4a90e2, stop: 1 #357abd);
-	border: 2px solid #2d5aa0;
+	background: transparent;
+	border: none;
 	border-radius: 8px;
-	color: white;
-	font-weight: bold;
-	padding: 8px 16px;
-	min-height: 20px;
+	padding: 5px;
+	transition: all 0.2s ease;
 }
 
 QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #5ba0f2, stop: 1 #4080d0);
-	border: 2px solid #4a90e2;
+	background: rgba(255, 255, 255, 0.15);
+	border-radius: 8px;
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #357abd, stop: 1 #2d5aa0);
-	border: 2px solid #1e4080;
+	background: rgba(255, 255, 255, 0.3);
+	border-radius: 8px;
+	transform: scale(0.95);
+	box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+	border: 2px solid rgba(74, 144, 226, 0.6);
 }
 
-/* 水平滑块样式 - 进度条 (网易云风格) */
 QSlider::groove:horizontal {
 	border: none;
 	height: 4px;
@@ -105,7 +106,6 @@ QSlider::add-page:horizontal {
 	border-radius: 2px;
 }
 
-/* 垂直滑块样式 - 音量条 (网易云风格) */
 QSlider::groove:vertical {
 	border: none;
 	width: 4px;
@@ -199,7 +199,6 @@ QSplitter::handle:vertical {
 	height: 3px;
 }
 
-/* 歌词列表视图优化样����� */
 QListView#lrclist {
 	background: rgba(0, 0, 0, 150);
 	border: 2px solid rgba(74, 144, 226, 100);
@@ -233,7 +232,6 @@ QListView#lrclist::item:selected {
 	font-weight: bold;
 }
 
-/* 滚动条美化 */
 QScrollBar:vertical {
 	background: rgba(0, 0, 0, 80);
 	width: 8px;
@@ -420,177 +418,121 @@ QLabel {
        </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
+       </property>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QPushButton" name="dirBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>40</height>
+            <height>0</height>
            </size>
           </property>
           <property name="styleSheet">
-           <string notr="true">/* 按钮样式 */
-QPushButton {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #4a90e2, stop: 1 #357abd);
-	border: 2px solid #2d5aa0;
-	border-radius: 8px;
-	color: white;
-	font-weight: bold;
-	padding: 8px 16px;
-	min-height: 20px;
-}
-
-QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #5ba0f2, stop: 1 #4080d0);
-	border: 2px solid #4a90e2;
-}
-
-QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #357abd, stop: 1 #2d5aa0);
-	border: 2px solid #1e4080;
-}</string>
+           <string notr="true"/>
           </property>
           <property name="text">
-           <string>打开文件夹</string>
+           <string/>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pauseBtn">
-          <property name="styleSheet">
-           <string notr="true">/* 按钮样式 */
-QPushButton {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #4a90e2, stop: 1 #357abd);
-	border: 2px solid #2d5aa0;
-	border-radius: 8px;
-	color: white;
-	font-weight: bold;
-	padding: 8px 16px;
-	min-height: 20px;
-}
-
-QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #5ba0f2, stop: 1 #4080d0);
-	border: 2px solid #4a90e2;
-}
-
-QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #357abd, stop: 1 #2d5aa0);
-	border: 2px solid #1e4080;
-}</string>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/dir.png</normaloff>:/images/dir.png</iconset>
           </property>
-          <property name="text">
-           <string>暂停</string>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="preBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="styleSheet">
-           <string notr="true">/* 按��样式 */
-QPushButton {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #4a90e2, stop: 1 #357abd);
-	border: 2px solid #2d5aa0;
-	border-radius: 8px;
-	color: white;
-	font-weight: bold;
-	padding: 8px 16px;
-	min-height: 20px;
-}
-
-QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #5ba0f2, stop: 1 #4080d0);
-	border: 2px solid #4a90e2;
-}
-
-QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #357abd, stop: 1 #2d5aa0);
-	border: 2px solid #1e4080;
-}</string>
+           <string notr="true"/>
           </property>
           <property name="text">
-           <string>上一个</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/prew.png</normaloff>:/images/prew.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="startBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="styleSheet">
-           <string notr="true">/* 按钮样式 */
-QPushButton {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #4a90e2, stop: 1 #357abd);
-	border: 2px solid #2d5aa0;
-	border-radius: 8px;
-	color: white;
-	font-weight: bold;
-	padding: 8px 16px;
-	min-height: 20px;
-}
-
-QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #5ba0f2, stop: 1 #4080d0);
-	border: 2px solid #4a90e2;
-}
-
-QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #357abd, stop: 1 #2d5aa0);
-	border: 2px solid #1e4080;
-}</string>
+           <string notr="true"/>
           </property>
           <property name="text">
-           <string>播放</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/pause.png</normaloff>:/images/pause.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="nextBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="autoFillBackground">
            <bool>false</bool>
           </property>
           <property name="styleSheet">
-           <string notr="true">/* 按钮样式 */
-QPushButton {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #4a90e2, stop: 1 #357abd);
-	border: 2px solid #2d5aa0;
-	border-radius: 8px;
-	color: white;
-	font-weight: bold;
-	padding: 8px 16px;
-	min-height: 20px;
-}
-
-QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #5ba0f2, stop: 1 #4080d0);
-	border: 2px solid #4a90e2;
-}
-
-QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #357abd, stop: 1 #2d5aa0);
-	border: 2px solid #1e4080;
-}</string>
+           <string notr="true"/>
           </property>
           <property name="text">
-           <string>下一个</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/next.png</normaloff>:/images/next.png</iconset>
           </property>
           <property name="iconSize">
            <size>
-            <width>65</width>
+            <width>45</width>
             <height>45</height>
            </size>
           </property>
@@ -601,33 +543,27 @@ QPushButton:pressed {
         </item>
         <item>
          <widget class="QPushButton" name="voiBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="styleSheet">
-           <string notr="true">/* 按钮样式 */
-QPushButton {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #4a90e2, stop: 1 #357abd);
-	border: 2px solid #2d5aa0;
-	border-radius: 8px;
-	color: white;
-	font-weight: bold;
-	padding: 8px 16px;
-	min-height: 20px;
-}
-
-QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #5ba0f2, stop: 1 #4080d0);
-	border: 2px solid #4a90e2;
-}
-
-QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-		stop: 0 #357abd, stop: 1 #2d5aa0);
-	border: 2px solid #1e4080;
-}</string>
+           <string notr="true"/>
           </property>
           <property name="text">
-           <string>Voice</string>
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/voice.png</normaloff>:/images/voice.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
           </property>
          </widget>
         </item>
@@ -648,13 +584,11 @@ QPushButton:pressed {
       </widget>
      </widget>
      <widget class="QListView" name="lrclist">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>1003</width>
-        <height>820</height>
-       </rect>
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
       </property>
       <property name="styleSheet">
        <string notr="true">/* 歌词列表视图优化样式 */
@@ -802,22 +736,6 @@ QScrollBar::sub-page:vertical {
     </hint>
     <hint type="destinationlabel">
      <x>550</x>
-     <y>241</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pauseBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>rsh::MusicPlayer</receiver>
-   <slot>PauseBtn_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>168</x>
-     <y>693</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>205</x>
      <y>241</y>
     </hint>
    </hints>

@@ -1,7 +1,14 @@
 <RCC>
-    <qresource>
-        <file>images/app_icon.ico</file>
-        <file>images/background.png</file>
-        <file>images/icon.png</file>
-    </qresource>
+  <qresource>
+    <file>images/mute.png</file>
+    <file>images/voice.png</file>
+    <file>images/dir.png</file>
+    <file>images/prew.png</file>
+    <file>images/pause.png</file>
+    <file>images/next.png</file>
+    <file>images/app_icon.ico</file>
+    <file>images/background.png</file>
+    <file>images/icon.png</file>
+    <file>images/start.png</file>
+  </qresource>
 </RCC>

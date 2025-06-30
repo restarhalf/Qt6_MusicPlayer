@@ -163,6 +163,34 @@ namespace rsh
         // 设置动画
         setupAnimations();
 
+        // 初始化音量控制
+        volumeHideTimer = new QTimer(this);
+        volumeHideTimer->setSingleShot(true);
+        volumeHideTimer->setInterval(500); // 2秒后自动隐藏音量滑块
+        connect(volumeHideTimer, &QTimer::timeout, this, &MusicPlayer::hideVolumeSlider);
+
+        // 初始化音量滑块状态
+        if (ui && ui->voice) {
+            ui->voice->setVisible(false); // 默认隐藏音量滑块
+            ui->voice->setValue(50); // 默认音量50%
+            lastVolume = 50;
+        }
+
+        // 设置音量按钮鼠标悬停事件
+        if (ui && ui->voiBtn) {
+            ui->voiBtn->installEventFilter(this);
+            ui->voiBtn->setAttribute(Qt::WA_Hover, true);
+        }
+
+        // 设置音量滑块鼠标悬停事件
+        if (ui && ui->voice) {
+            ui->voice->installEventFilter(this);
+            ui->voice->setAttribute(Qt::WA_Hover, true);
+        }
+
+        // 更新音量图标
+        updateVolumeIcon(50);
+
         // 加载播放器状态
         loadPlayerState();
 
@@ -174,7 +202,7 @@ namespace rsh
         // 立即标记对象为无效，防止任何回调访问
         m_isValid = false;
 
-        // 停���所有定时器，防止在对象销毁时继续访问UI
+        // 停止所有定时器，防止在对象销毁时继续访问UI
         if (lyricTimer) {
             lyricTimer->stop();
             lyricTimer->deleteLater();
@@ -193,7 +221,7 @@ namespace rsh
             playbackTimer = nullptr;
         }
 
-        // 断开所有信号连接，防止在销���过程中触发回调
+        // 断开所有信号连接，防止在销毁���程中触发回调
         if (player) {
             disconnect(player, nullptr, this, nullptr);
             player->stop();
@@ -239,7 +267,7 @@ namespace rsh
             auto info = it.nextFileInfo();
             QString filePath = info.absoluteFilePath();
             auto item = new QStandardItem(getMusicTitle(filePath));
-            item->setData(filePath, Qt::UserRole + 1);  // 存储��整文件路径
+            item->setData(filePath, Qt::UserRole + 1);  // 存储完整文件路径
             musicmodel->appendRow(item);
         }
     }
@@ -248,37 +276,44 @@ namespace rsh
         if (!player || !audioOutput || !index.isValid()) {
             return; // 安全检查：确保播放器和索引有效
         }
-
-        isSliderBeingDragged = false; // 确保在点击歌��时不再拖动进度条
+        isSliderBeingDragged = false; // 确保在点击歌曲时不再拖动进���条
         auto filePath = index.data(Qt::UserRole + 1).toString();
 
         if (filePath.isEmpty()) {
-            return; // 安全检查：确保文件路����有效
+            return; // 安全检查：确保文件路径有效
         }
 
         // 加载歌词
         loadLyricsFromMetadata(filePath);
 
-        // 更新播放器信息
+        // 更新播放器信息和音乐显示信息
         updatePlayerInfo(filePath);
+        updateMusicInfo(filePath);  // 添加这行来更新音乐信息显示
 
         player->setSource(QUrl::fromLocalFile(filePath));
-        if (ui && ui->songName) {
-            ui->songName->setText(index.data(Qt::DisplayRole).toString());
-        }
+        // 移除或注释掉这行，因为它会覆盖updateMusicInfo设置的信息
+        // if (ui && ui->songName) {
+        //     ui->songName->setText(index.data(Qt::DisplayRole).toString());
+        // }
+        ui->startBtn->setIcon(QIcon(":/images/start.png")); // 设置开始按钮图标
         player->play();
     }
-
-    void MusicPlayer::PauseBtn_clicked() {
-        if (!player) return; // 安全检查
-        isSliderBeingDragged = false;
-        player->pause();
-    }
-
     void MusicPlayer::StartBtn_clicked() {
         if (!player) return; // 安全检查
         isSliderBeingDragged = false; // 确保在点击开始按钮时不再拖动进度条
-        player->play();
+        if (player->playbackState() == QMediaPlayer::PlayingState)
+        {
+            // 如果播放器正在播放，则暂停
+            ui->startBtn->setIcon(QIcon(":/images/pause.png"));
+            player->pause();
+        }
+        else if (player->playbackState() == QMediaPlayer::PausedState)
+        {
+            // 如果播放器处于暂停状态，则继续播放
+            ui->startBtn->setIcon(QIcon(":/images/start.png"));
+            player->play();
+        }
+
     }
 
     void MusicPlayer::PrewBtn_clicked() {
@@ -321,9 +356,22 @@ namespace rsh
 
     void MusicPlayer::VoiceBtn_clicked() {
         // 强化安全检查
-        if (!m_isValid || !ui || !ui->voice) return;
+        if (!m_isValid || !ui || !ui->voice || !audioOutput) return;
 
-        ui->voice->setVisible(!ui->voice->isVisible());
+        if (isMuted) {
+            // 恢复音量
+            isMuted = false;
+            audioOutput->setVolume(static_cast<float>(lastVolume) / 100.0f);
+            ui->voice->setValue(lastVolume);
+            updateVolumeIcon(lastVolume);
+        } else {
+            // 静音
+            isMuted = true;
+            lastVolume = ui->voice->value(); // 保存当前音量
+            audioOutput->setVolume(0.0f);
+            ui->voice->setValue(0);
+            updateVolumeIcon(0);
+        }
     }
 
     void MusicPlayer::Audio_release() {
@@ -343,7 +391,7 @@ namespace rsh
     }
 
     void MusicPlayer::Audio_valueChanged(int value) {
-        // 当用户���动进度条时，实时更新时间显示
+        // 当用户拖动进度条时，实时更新时间显示
         if (isSliderBeingDragged && ui && ui->now && player) {
             auto position = static_cast<qint64>(value);
             if (position % 60000 / 1000 < 10) {
@@ -356,11 +404,90 @@ namespace rsh
     }
 
     void MusicPlayer::Voice_valueChanged(int value) {
-        // 音量调节
-        if (audioOutput && ui && ui->voice) {
-            float volume = static_cast<float>(value) / 100.0f; // 修复类型转换
-            audioOutput->setVolume(volume);
-            ui->voice->setValue(value); // 更新音量滑块的值
+        // 音量调节 - 主流播放器风格
+        if (!audioOutput || !ui || !ui->voice) return;
+
+        // 如果音量从0变为非0，自动取消静音状态
+        if (isMuted && value > 0) {
+            isMuted = false;
+        }
+
+        // 如果手动将音量调为0，进入静音状态
+        if (!isMuted && value == 0) {
+            isMuted = true;
+        }
+
+        // 更新实际音量
+        float volume = static_cast<float>(value) / 100.0f;
+        audioOutput->setVolume(volume);
+
+        // 更新音量图标
+        updateVolumeIcon(value);
+
+        // 如果不是静音状态，保存当前音量为lastVolume
+        if (!isMuted && value > 0) {
+            lastVolume = value;
+        }
+
+        // 显示音量滑块并重置隐藏定时器
+        showVolumeSlider();
+    }
+
+    // 更新音量图标
+    void MusicPlayer::updateVolumeIcon(int volume) {
+        if (!ui || !ui->voiBtn) return;
+
+        QString iconPath;
+        if (volume == 0 || isMuted) {
+            iconPath = ":/images/mute.png"; // 静音图标
+        } else if (volume <= 30) {
+            iconPath = ":/images/voice.png";  // 低音量图标（使用默认图标）
+        } else if (volume <= 70) {
+            iconPath = ":/images/voice.png";  // 中音量图标（使用默认图标）
+        } else {
+            iconPath = ":/images/voice.png"; // 高音量图标（使用默认图标）
+        }
+
+        // 如果图标���件不存在，使用默认图标
+        if (!QFile::exists(iconPath)) {
+            iconPath = ":/images/voice.png"; // 默认音量图标
+        }
+
+        ui->voiBtn->setIcon(QIcon(iconPath));
+    }
+
+    // 显示音量滑块
+    void MusicPlayer::showVolumeSlider() {
+        if (!ui || !ui->voice || !volumeHideTimer) return;
+
+        // 停止隐藏定时器
+        volumeHideTimer->stop();
+
+        // 确保控件完全可见（重置透明度效果）
+        QGraphicsOpacityEffect *effect = qobject_cast<QGraphicsOpacityEffect*>(ui->voice->graphicsEffect());
+        if (effect) {
+            effect->setOpacity(1.0);
+        }
+
+        // 显示音量滑块
+        ui->voice->setVisible(true);
+
+        // 启动隐藏定时器
+        volumeHideTimer->start();
+    }
+
+    // 隐藏音量滑块
+    void MusicPlayer::hideVolumeSlider() {
+        if (!ui || !ui->voice) return;
+
+        // 直接隐藏，不使用动画（避免透明度效果干扰）
+        ui->voice->setVisible(false);
+
+        // 清除可能存在的透明度效果
+        QGraphicsOpacityEffect *effect = qobject_cast<QGraphicsOpacityEffect*>(ui->voice->graphicsEffect());
+        if (effect) {
+            ui->voice->setGraphicsEffect(nullptr);
+            effect->deleteLater();
         }
     }
     QString MusicPlayer::getMusicTitle(const QString& filePath) {
@@ -399,7 +526,7 @@ namespace rsh
             return QString();
         }
 
-        // 尝试从 MP3 文件��提取歌词
+        // 尝试从 MP3 文件中提取歌词
         if (auto mp3File = dynamic_cast<TagLib::MPEG::File*>(file.file())) {
             if (auto id3v2Tag = mp3File->ID3v2Tag()) {
                 // 查找 USLT 帧（未同步歌词）
@@ -426,7 +553,7 @@ namespace rsh
         return QString();
     }
 
-    // 加载歌词（优先从元数据，其次从LRC文件���
+    // 加载歌词（优先从元数据，其次从LRC文件）
     void MusicPlayer::loadLyricsFromMetadata(const QString& filePath) {
         lyrics.clear();
         lrcmodel->clear();
@@ -436,7 +563,7 @@ namespace rsh
         QString embeddedLyrics = extractLyricsFromFile(filePath);
 
         if (!embeddedLyrics.isEmpty()) {
-            // 如果是 LRC 格式的嵌入歌�� - 使用���态正则表达式
+            // 如果是 LRC 格式的嵌入歌词 - 使用静态正则表达式
             if (embeddedLyrics.contains(lrcFormatRegex)) {
                 parseLrcContent(embeddedLyrics);
             } else {
@@ -462,8 +589,8 @@ namespace rsh
 
         QFile file(lrcFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            auto defaultItem = new QStandardItem("无法��开歌词文件");
-            defaultItem->setTextAlignment(Qt::AlignCenter);  // 居��对齐
+            auto defaultItem = new QStandardItem("��法打开歌词文件");
+            defaultItem->setTextAlignment(Qt::AlignCenter);  // 居中对齐
             lrcmodel->appendRow(defaultItem);
             return;
         }
@@ -477,7 +604,7 @@ namespace rsh
             QString line = in.readLine().trimmed();
             if (line.isEmpty()) continue;
 
-            // 提取歌词文本（移除时间标签��
+            // 提取歌词文本（移除时间标签）
             QString text = line;
             QRegularExpressionMatchIterator matches = timeRegex.globalMatch(line);
             while (matches.hasNext()) {
@@ -526,7 +653,7 @@ namespace rsh
             QString line = stream.readLine().trimmed();
             if (line.isEmpty()) continue;
 
-            // 提取歌词文本（移除时间标签��
+            // 提取歌词文本（移除时间标签）
             QString text = line;
             QRegularExpressionMatchIterator matches = timeRegex.globalMatch(line);
             while (matches.hasNext()) {
@@ -555,7 +682,7 @@ namespace rsh
             return a.timestamp < b.timestamp;
         });
 
-        // ��加到模型中显示，设置居中对齐
+        // 添加到模型中显示，设置居中对齐
         for (const auto& lyric : lyrics) {
             auto item = new QStandardItem(lyric.text);
             item->setTextAlignment(Qt::AlignCenter);  // 设置文本居中对齐
@@ -598,7 +725,7 @@ namespace rsh
         // 找到当前播放位置对应的歌词 - 修复数组越界问题
         for (int i = 0; i < lyrics.size(); ++i) {
             if (currentPosition >= lyrics[i].timestamp) {
-                // 安全检查：确保newIndex有效才进行比较
+                // 安全��查：确保newIndex有效才进行比较
                 if (newIndex >= 0 && newIndex < lyrics.size() &&
                     lyrics[i].timestamp == lyrics[newIndex].timestamp) {
                     newIndex1 = i;
@@ -625,7 +752,7 @@ namespace rsh
         }
     }
 
-    // ��增：更新歌词高亮的方法
+    // 增：更新歌词高亮的方法
     void MusicPlayer::updateLyricHighlight() {
         // 强化安全检查 - 检查对象有效性
         if (!m_isValid || !lrcmodel || !ui || !ui->lrclist) {
@@ -637,7 +764,7 @@ namespace rsh
             auto item = lrcmodel->item(i);
             if (!item) continue; // 跳过空项
 
-            // 计算距离当前歌词的��离，用于设置透明度
+            // 计算距离当前歌词的距离，用于设置透明度
             int distance = abs(i - currentLyricIndex);
 
             QFont font = item->font();
@@ -719,7 +846,7 @@ namespace rsh
             return;
         }
 
-        // 获取��动条
+        // 获取滚动条
         QScrollBar *scrollBar = ui->lrclist->verticalScrollBar();
         if (!scrollBar) return;
 
@@ -737,13 +864,13 @@ namespace rsh
         int viewHeight = ui->lrclist->viewport()->height();
         int currentScrollValue = scrollBar->value();
 
-        // 计算目标滚动位置，让歌词显示在中央偏上位置
+        // 计算目标滚动位��，让歌词显示在中央偏上位置
         int targetScrollValue = itemRect.top() + scrollBar->value() - (viewHeight * 0.4);
 
         // 限制滚动范围
         targetScrollValue = qBound(scrollBar->minimum(), targetScrollValue, scrollBar->maximum());
 
-        // ����目标位置和当前位置差距很小，就不需要动画
+        // 如果目标位置和当前位置差距很小，就不需要动画
         if (abs(targetScrollValue - currentScrollValue) < 10) {
             ui->lrclist->scrollTo(index, QAbstractItemView::PositionAtCenter);
             QTimer::singleShot(50, [this]() {
@@ -755,7 +882,7 @@ namespace rsh
         // 创建平滑滚动动画
         fadeAnimation = new QPropertyAnimation(scrollBar, "value", this);
 
-        // 根据距离调整���画时间，距��越远动画时间越长，但有上下限
+        // 根据距离调整动画时间，距离越远动画时间越长，但有上下限
         int distance = abs(targetScrollValue - currentScrollValue);
         int animationDuration = qBound(300, distance * 2, 1000); // 300ms到1000ms之间
 
@@ -764,7 +891,7 @@ namespace rsh
         fadeAnimation->setStartValue(currentScrollValue);
         fadeAnimation->setEndValue(targetScrollValue);
 
-        // ���接动画完成信号
+        // 连接动画完成信号
         connect(fadeAnimation, &QPropertyAnimation::finished, [this]() {
             // 滚动完成后添加脉冲效果
             QTimer::singleShot(100, [this]() {
@@ -792,7 +919,7 @@ namespace rsh
         auto item = lrcmodel->item(currentLyricIndex);
         if (!item) return;
 
-        // 避���在动画过程中直接修改item，使用更安全的方式
+        // 避免在动画过程中直接修改item，使用更安全的方式
         // 检查item是否仍然有效
         if (currentLyricIndex >= lrcmodel->rowCount()) {
             return; // item可能已经被删除
@@ -823,11 +950,11 @@ namespace rsh
             double alpha = value.toDouble();
             QColor highlightColor = QColor(74, 144, 226, static_cast<int>(alpha * 150 + 100));
 
-            // 使用try-catch保护关键操作
+            // 使用try-catch保护关闭操作
             try {
                 currentItem->setBackground(QBrush(highlightColor));
             } catch (...) {
-                // 如果设置背景失败，忽��错误
+                // 如果设置背景失败，忽略错误
                 qWarning() << "Failed to set background color for lyric item";
             }
         });
@@ -840,6 +967,93 @@ namespace rsh
 
         pulseAnimation->start();
     }
+    // 添加到 musicplayer.cpp 文件中的方法实现
+
+QString MusicPlayer::getArtistName(const QString& filePath) {
+    TagLib::FileRef file(filePath.toLocal8Bit().constData());
+    if (file.isNull()) {
+        return QString();
+    }
+
+    // 尝试从 MP3 文件中获取歌手
+    if (auto mp3File = dynamic_cast<TagLib::MPEG::File*>(file.file())) {
+        if (auto id3v2Tag = mp3File->ID3v2Tag()) {
+            return QString::fromStdString(id3v2Tag->artist().to8Bit(true));
+        }
+    }
+
+    // 对于 FLAC 文件，从 Vorbis 注释中获取歌手
+    if (auto flacFile = dynamic_cast<TagLib::FLAC::File*>(file.file())) {
+        auto properties = flacFile->properties();
+        if (properties.contains("ARTIST")) {
+            return QString::fromStdString(properties["ARTIST"].front().to8Bit(true));
+        }
+    }
+
+    // 通用方法获取歌手信息
+    if (file.tag()) {
+        return QString::fromStdString(file.tag()->artist().to8Bit(true));
+    }
+
+    return QString();
+}
+
+QString MusicPlayer::getAlbumName(const QString& filePath) {
+    TagLib::FileRef file(filePath.toLocal8Bit().constData());
+    if (file.isNull()) {
+        return QString();
+    }
+
+    // 尝试从 MP3 文件中获取专辑
+    if (auto mp3File = dynamic_cast<TagLib::MPEG::File*>(file.file())) {
+        if (auto id3v2Tag = mp3File->ID3v2Tag()) {
+            return QString::fromStdString(id3v2Tag->album().to8Bit(true));
+        }
+    }
+
+    // 对于 FLAC 文件，从 Vorbis 注释中获取专辑
+    if (auto flacFile = dynamic_cast<TagLib::FLAC::File*>(file.file())) {
+        auto properties = flacFile->properties();
+        if (properties.contains("ALBUM")) {
+            return QString::fromStdString(properties["ALBUM"].front().to8Bit(true));
+        }
+    }
+
+    // 通用方法获取专辑信息
+    if (file.tag()) {
+        return QString::fromStdString(file.tag()->album().to8Bit(true));
+    }
+
+    return QString();
+}
+
+void MusicPlayer::updateMusicInfo(const QString& filePath) {
+    // 获取歌曲信息
+    QString title = getMusicTitle(filePath);
+    QString artist = getArtistName(filePath);
+    QString album = getAlbumName(filePath);
+
+    // 如果没有标题，使用文件名
+    if (title.isEmpty()) {
+        QFileInfo fileInfo(filePath);
+        title = fileInfo.baseName();
+    }
+
+    // 如果没有歌手信息，使用"未知歌手"
+    if (artist.isEmpty()) {
+        artist = "未知歌手";
+    }
+
+    // 如果没有专辑信息，使用"未知专辑"
+    if (album.isEmpty()) {
+        album = "未知专辑";
+    }
+
+    // 组合格式：歌名-歌手-专辑
+    QString displayText = QString("%1\n%2\n%3").arg(title, artist, album);
+    ui->songName->setText(displayText);
+
+}
     // 更新播放状态
     void MusicPlayer::updatePlaybackState() {
         // 强化安全检查 - 检查对象有效性
@@ -850,10 +1064,10 @@ namespace rsh
         // 根据播放状态更新按钮文本和状态
         switch (state) {
             case QMediaPlayer::PlayingState:
-                // 可以在这里更新播放���钮图标或文本
+                // 可以在这里更新播放按钮图标或文本
                 break;
             case QMediaPlayer::PausedState:
-                // 可以在这里更��暂停按钮图标或文本
+                // 可以在这里更新暂停按钮图标或文本
                 break;
             case QMediaPlayer::StoppedState:
                 // 重置UI状态
@@ -886,7 +1100,7 @@ namespace rsh
             playHistory.append(currentIndex);
             historyIndex = playHistory.size() - 1;
 
-            // 限制历史记��长度
+            // 限制历史记录长度
             if (playHistory.size() > 50) {
                 playHistory.removeFirst();
                 historyIndex--;
@@ -908,7 +1122,7 @@ namespace rsh
                 player->play();
                 break;
             case LoopAll:
-                NextBtn_clicked(); // 播放下一��，NextBtn_clicked已经处理了循环逻辑
+                NextBtn_clicked(); // 播放下一首，NextBtn_clicked已经处理了循环逻辑
                 break;
             case Random:
                 {
@@ -927,7 +1141,7 @@ namespace rsh
     void MusicPlayer::updatePlaybackMode(PlaybackMode mode) {
         currentPlaybackMode = mode;
 
-        // 可以在这里更���UI显示当前播放模式
+        // 可以在这里更新UI显示当前播放模式
         QString modeText;
         switch (mode) {
             case Sequential:
@@ -950,9 +1164,9 @@ namespace rsh
         savePlayerState();
     }
 
-    // ��新音乐列表
+    // 新音乐列表
     void MusicPlayer::refreshMusicList() {
-        // 保存当前������的项目
+        // 保存当前选择的项目
         QString currentFilePath;
         auto currentIdx = ui->musiclist->currentIndex();
         if (currentIdx.isValid()) {
@@ -962,7 +1176,7 @@ namespace rsh
         // 重新扫描音乐文件夹（如果需要的话）
         // 这里可以添加自动刷新逻辑
 
-        // 恢复选中状态
+        // 恢复选择状态
         if (!currentFilePath.isEmpty()) {
             for (int i = 0; i < musicmodel->rowCount(); ++i) {
                 auto item = musicmodel->item(i);
@@ -1029,7 +1243,7 @@ namespace rsh
         currentLyricIndex = clickedRow;
         currentIndex = -1; // 重置双歌词索引
 
-        // 处理相同时间戳的情况���添加边界检查）
+        // 处理相同时间戳的情况（添加边界检查）
         if (clickedRow > 0 && clickedRow < lyrics.size() &&
             lyrics[clickedRow].timestamp == lyrics[clickedRow - 1].timestamp) {
             currentLyricIndex = clickedRow - 1;
@@ -1052,12 +1266,12 @@ namespace rsh
         smoothScrollToLyric(currentLyricIndex);
     }
 
-    // 保��播放器��态
+    // 保持播放器状态
     void MusicPlayer::savePlayerState() {
         // 这里可以保存到配置文件或注册表
         // 包括：当前播放歌曲、播放位置、音量、播放模式等
 
-        // 示例：保��到QSettings
+        // 示例：保存到QSettings
         /*
         QSettings settings;
         settings.setValue("player/currentIndex", currentIndex);
@@ -1069,11 +1283,11 @@ namespace rsh
         */
     }
 
-    // 加载播放器��态
+    // 加载播放器状态
     void MusicPlayer::loadPlayerState() {
         // 从配置文件或注册表加载播放器状态
 
-        // ��例：从QSettings加载
+        // 例：从QSettings加载
         /*
         QSettings settings;
         currentIndex = settings.value("player/currentIndex", -1).toInt();
@@ -1088,7 +1302,7 @@ namespace rsh
         */
     }
 
-    // 设置动画效果
+    // 设���动画效果
     void MusicPlayer::setupAnimations() {
         // 初始化歌词列表的透明度效果
         opacityEffect = new QGraphicsOpacityEffect(this);
@@ -1100,7 +1314,7 @@ namespace rsh
 
         // 设置歌词列表的平滑滚动属性
         ui->lrclist->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-        // 隐藏水平和垂直滚动条
+        // 隐藏���平和垂直滚动条
         ui->lrclist->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         ui->lrclist->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
@@ -1143,7 +1357,7 @@ namespace rsh
 
     // Qt6兼容的槽函数实现
     void MusicPlayer::onDurationChanged(qint64 duration) {
-        if (!ui || !ui->full || !ui->bofangtiao) return; // 安全���查
+        if (!ui || !ui->full || !ui->bofangtiao) return; // 安全检查
         if (duration % 60000 / 1000 < 10)
             ui->full->setText(QString::number(duration / 60000) + ":0" + QString::number((duration % 60000) / 1000));
         else
@@ -1170,5 +1384,104 @@ namespace rsh
 
     void MusicPlayer::onPlaybackStateChanged(QMediaPlayer::PlaybackState state) {
         updatePlaybackState();
+    }
+
+    // 音量控制鼠标悬停事件处理函数
+    void MusicPlayer::onVolumeButtonEntered() {
+        // 鼠标进入音量按钮时显示音量滑块
+        showVolumeSlider();
+    }
+
+    void MusicPlayer::onVolumeButtonLeft() {
+        // 鼠标离开音量按钮时启动隐藏定时器
+        if (volumeHideTimer && ui && ui->voice) {
+            // 检查鼠标是否在音量滑块区域内
+            QPoint globalPos = QCursor::pos();
+            QPoint sliderPos = ui->voice->mapFromGlobal(globalPos);
+
+            // 如果鼠标不在滑块区域内，启动隐藏定时器
+            if (!ui->voice->rect().contains(sliderPos)) {
+                volumeHideTimer->start();
+            }
+        }
+    }
+
+    void MusicPlayer::onVolumeSliderEntered() {
+        // 鼠标进入音量滑块时停止隐藏定时器
+        if (volumeHideTimer) {
+            volumeHideTimer->stop();
+        }
+    }
+
+    void MusicPlayer::onVolumeSliderLeft() {
+        // 鼠标离开音量滑块时，只有在没有被拖拽的情况下才启动隐藏定时器
+        if (isVolumeSliderBeingDragged) {
+            return; // 如果正在拖拽，不隐藏
+        }
+
+        if (volumeHideTimer && ui && ui->voiBtn) {
+            // 检查鼠标是否在音量按钮区域内
+            QPoint globalPos = QCursor::pos();
+            QPoint buttonPos = ui->voiBtn->mapFromGlobal(globalPos);
+
+            // 如果鼠标不在按钮区域内，启动隐藏定时器
+            if (!ui->voiBtn->rect().contains(buttonPos)) {
+                volumeHideTimer->start();
+            }
+        }
+    }
+
+    // 事��过滤器实现
+    bool MusicPlayer::eventFilter(QObject *obj, QEvent *event) {
+        if (!m_isValid || !ui) {
+            return QWidget::eventFilter(obj, event);
+        }
+
+        // 处理音量按钮的鼠标事件
+        if (obj == ui->voiBtn) {
+            switch (event->type()) {
+                case QEvent::Enter:
+                    onVolumeButtonEntered();
+                    break;
+                case QEvent::Leave:
+                    onVolumeButtonLeft();
+                    break;
+                default:
+                    break;
+            }
+        }
+        // 处理音量滑块的鼠标事件
+        else if (obj == ui->voice) {
+            switch (event->type()) {
+                case QEvent::Enter:
+                    onVolumeSliderEntered();
+                    break;
+                case QEvent::Leave:
+                    onVolumeSliderLeft();
+                    break;
+                case QEvent::MouseButtonPress:
+                    // 鼠标按下时标记为正在拖拽
+                    isVolumeSliderBeingDragged = true;
+                    if (volumeHideTimer) {
+                        volumeHideTimer->stop(); // 停止隐藏定时器
+                    }
+                    break;
+                case QEvent::MouseButtonRelease:
+                    // 鼠标释放时取消拖拽标记
+                    isVolumeSliderBeingDragged = false;
+                    // 延迟一小段时间后再启动隐藏定时器，避免立即隐藏
+                    QTimer::singleShot(500, [this]() {
+                        if (!isVolumeSliderBeingDragged && volumeHideTimer) {
+                            volumeHideTimer->start();
+                        }
+                    });
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // 调用父类的事件过滤器
+        return QWidget::eventFilter(obj, event);
     }
 }
