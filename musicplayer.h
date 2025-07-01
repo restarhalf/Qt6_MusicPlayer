@@ -122,8 +122,14 @@ private:
     QGraphicsOpacityEffect *opacityEffect = nullptr;
     QScrollBar *scrollBar = nullptr;
 
+    // 新增：歌词平滑滚动相关
+    QPropertyAnimation *lyricScrollAnimation = nullptr;
+    QTimer *lyricScrollTimer = nullptr;
+    int targetScrollPosition = 0;
+    bool isUserScrolling = false;
+
     // 音量控制相关
-    int lastVolume = 50;  // ���音前的音量值
+    int lastVolume = 50;
     bool isMuted = false; // 静音状态
     QTimer* volumeHideTimer = nullptr; // 音量滑块自动隐藏定时器
     bool isVolumeSliderBeingDragged = false; // 跟踪音量滑块是否正在被拖拽
@@ -131,7 +137,7 @@ private:
     void setupAnimations();
     void fadeInWidget(QWidget *widget, int duration);
     void fadeOutWidget(QWidget *widget, int duration);
-    void updateVolumeIcon(int volume); // 更新音量���标
+    void updateVolumeIcon(int volume);
     void showVolumeSlider(); // 显示音量滑块
     void hideVolumeSlider(); // 隐藏音量滑块
 

@@ -71,6 +71,10 @@ namespace rsh
             lyricTimer = new QTimer(this);
             uiUpdateTimer = new QTimer(this);
             playbackTimer = new QTimer(this);
+
+            // 初始化歌词滚动动画组件
+            lyricScrollAnimation = new QPropertyAnimation(this);
+            lyricScrollTimer = new QTimer(this);
         } catch (const std::exception& e) {
             qCritical() << "Component initialization failed:" << e.what();
             return;
@@ -166,8 +170,20 @@ namespace rsh
         // 初始化音量控制
         volumeHideTimer = new QTimer(this);
         volumeHideTimer->setSingleShot(true);
-        volumeHideTimer->setInterval(500); // 2秒后自动隐藏音量滑块
+        volumeHideTimer->setInterval(500); // 500ms后自动隐藏音量滑块
         connect(volumeHideTimer, &QTimer::timeout, this, &MusicPlayer::hideVolumeSlider);
+
+        // 初始化歌词滚动相关组件
+        if (lyricScrollAnimation && ui && ui->lrclist) {
+            // 设置歌词列表的滚动属性
+            ui->lrclist->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+            ui->lrclist->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            ui->lrclist->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+            // 设置歌词滚动动画目标
+            lyricScrollAnimation->setTargetObject(ui->lrclist->verticalScrollBar());
+            lyricScrollAnimation->setPropertyName("value");
+        }
 
         // 初始化音量滑块状态
         if (ui && ui->voice) {
@@ -464,16 +480,12 @@ namespace rsh
 
         QString iconPath;
         if (volume == 0 || isMuted) {
-            iconPath = ":/images/mute.png"; // 静音图标
-        } else if (volume <= 30) {
-            iconPath = ":/images/voice.png";  // 低音量图标（使用默认图标）
-        } else if (volume <= 70) {
-            iconPath = ":/images/voice.png";  // 中音量图标（使用默认图标）
-        } else {
-            iconPath = ":/images/voice.png"; // 高音量图标（使用默认图标）
-        }
+            iconPath = ":/images/mute.png";
+        } else
+            iconPath = ":/images/voice.png";
 
-        // 如果图标���件不存在，使用默认图标
+
+        // 如果图标文件不存在，使用默认图标
         if (!QFile::exists(iconPath)) {
             iconPath = ":/images/voice.png"; // 默认音量图标
         }
@@ -487,13 +499,6 @@ namespace rsh
 
         // 停止隐藏定时器
         volumeHideTimer->stop();
-
-        // 确保控件完全可见（重置透明度效果）
-        QGraphicsOpacityEffect *effect = qobject_cast<QGraphicsOpacityEffect*>(ui->voice->graphicsEffect());
-        if (effect) {
-            effect->setOpacity(1.0);
-        }
-
         // 显示音量滑块
         ui->voice->setVisible(true);
 
@@ -614,7 +619,7 @@ namespace rsh
 
         QFile file(lrcFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            auto defaultItem = new QStandardItem("��法打开歌词文件");
+            auto defaultItem = new QStandardItem("无法打开歌词文件");
             defaultItem->setTextAlignment(Qt::AlignCenter);  // 居中对齐
             lrcmodel->appendRow(defaultItem);
             return;
@@ -717,14 +722,15 @@ namespace rsh
     QString MusicPlayer::findLrcFile(const QString& musicFilePath) {
         QFileInfo musicInfo(musicFilePath);
         QString baseName = musicInfo.completeBaseName();
+        QString titlename = getMusicTitle(musicFilePath);
         QString dirPath = musicInfo.absolutePath();
 
         // 可能的 LRC 文件路径
         QStringList possiblePaths = {
             dirPath + "/" + baseName + ".lrc",
             dirPath + "/" + baseName + ".LRC",
-            dirPath + "/lyrics/" + baseName + ".lrc",
-            dirPath + "/Lyrics/" + baseName + ".lrc"
+            dirPath + "/" + titlename + ".lrc",
+            dirPath + "/" + titlename + ".LRC",
         };
 
         // 检查每个可能的路径
@@ -750,7 +756,6 @@ namespace rsh
         // 找到当前播放位置对应的歌词 - 修复数组越界问题
         for (int i = 0; i < lyrics.size(); ++i) {
             if (currentPosition >= lyrics[i].timestamp) {
-                // 安全��查：确保newIndex有效才进行比较
                 if (newIndex >= 0 && newIndex < lyrics.size() &&
                     lyrics[i].timestamp == lyrics[newIndex].timestamp) {
                     newIndex1 = i;
@@ -1333,13 +1338,8 @@ void MusicPlayer::updateMusicInfo(const QString& filePath) {
         opacityEffect = new QGraphicsOpacityEffect(this);
         opacityEffect->setOpacity(1.0);
         ui->lrclist->setGraphicsEffect(opacityEffect);
-
-        // 获取歌词列表的滚动条（仅用于程序控制，不显示给用户）
         scrollBar = ui->lrclist->verticalScrollBar();
-
-        // 设置歌词列表的平滑滚动属性
         ui->lrclist->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-        // 隐藏���平和垂直滚动条
         ui->lrclist->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         ui->lrclist->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
@@ -1455,8 +1455,6 @@ void MusicPlayer::updateMusicInfo(const QString& filePath) {
             }
         }
     }
-
-    // 事��过滤器实现
     bool MusicPlayer::eventFilter(QObject *obj, QEvent *event) {
         if (!m_isValid || !ui) {
             return QWidget::eventFilter(obj, event);
