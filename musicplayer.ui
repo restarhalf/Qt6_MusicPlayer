@@ -44,21 +44,17 @@ QPushButton {
 	border: none;
 	border-radius: 8px;
 	padding: 5px;
-	transition: all 0.2s ease;
 }
 
 QPushButton:hover {
 	background: rgba(255, 255, 255, 0.15);
 	border-radius: 8px;
-	transform: scale(1.05);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 QPushButton:pressed {
 	background: rgba(255, 255, 255, 0.3);
 	border-radius: 8px;
-	transform: scale(0.95);
-	box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
 	border: 2px solid rgba(74, 144, 226, 0.6);
 }
 
@@ -290,6 +286,12 @@ QScrollBar::sub-page:vertical {
        <enum>Qt::Orientation::Vertical</enum>
       </property>
       <widget class="QListView" name="musiclist">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>600</height>
+        </size>
+       </property>
        <property name="styleSheet">
         <string notr="true">/* 列表视图样式 */
 QListView {
@@ -663,6 +665,12 @@ QScrollBar::sub-page:vertical {
       </property>
       <property name="editTriggers">
        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+      </property>
+      <property name="tabKeyNavigation">
+       <bool>true</bool>
+      </property>
+      <property name="showDropIndicator" stdset="0">
+       <bool>false</bool>
       </property>
       <property name="movement">
        <enum>QListView::Movement::Snap</enum>

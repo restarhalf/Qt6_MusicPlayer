@@ -108,6 +108,8 @@ private:
     void updateLyricHighlight();
     void smoothScrollToLyric(int lyricIndex);
     void pulseCurrentLyric();
+    void addLyricPaddingItems(); // 添加歌词填充项，使歌词能够居中显示
+    int calculatePaddingItemsCount(); // 计算需要的填充项数量
 
     // 新增的更新流方法
     void updatePlayerInfo(const QString& filePath);
