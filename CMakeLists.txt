@@ -36,8 +36,10 @@ add_executable(MusicPlayer
         musicplayer.cpp
         musicplayer.h
         musicplayer.ui
+        restarhalf.hpp
         res.qrc
         app_icon.rc
+        restarhalf.hpp
 )
 
 # 链接Qt库和TagLib

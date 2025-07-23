@@ -56,6 +56,9 @@ public:
     void onVolumeSliderEntered(); // 鼠标进入音量滑块
     void onVolumeSliderLeft(); // 鼠标离开音量滑块
 
+    // 音量滑块自动隐藏槽函数
+    void hideVolumeSlider(); // 隐藏音量滑块
+
     QString getMusicTitle(const QString& filePath);
     QString getArtistName(const QString& filePath);
     QString getAlbumName(const QString& filePath);
@@ -141,7 +144,6 @@ private:
     void fadeOutWidget(QWidget *widget, int duration);
     void updateVolumeIcon(int volume);
     void showVolumeSlider(); // 显示音量滑块
-    void hideVolumeSlider(); // 隐藏音量滑块
 
 protected:
     // 事件过滤器，处理鼠标悬停事件
