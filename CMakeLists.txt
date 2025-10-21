@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.16)
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     if(DEFINED ENV{GITHUB_ACTIONS})
         set(CMAKE_TOOLCHAIN_FILE "$ENV{GITHUB_WORKSPACE}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            CACHE STRING "Vcpkg toolchain file")
+                CACHE STRING "Vcpkg toolchain file")
     else()
         set(CMAKE_TOOLCHAIN_FILE "D:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            CACHE STRING "Vcpkg toolchain file")
+                CACHE STRING "Vcpkg toolchain file")
     endif()
 endif()
 
@@ -36,10 +36,8 @@ add_executable(MusicPlayer
         musicplayer.cpp
         musicplayer.h
         musicplayer.ui
-        restarhalf.hpp
         res.qrc
         app_icon.rc
-        restarhalf.hpp
 )
 
 # 链接Qt库和TagLib
@@ -54,7 +52,7 @@ target_link_libraries(MusicPlayer
 
 # 设置输出目录
 set_target_properties(MusicPlayer PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Release
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Release
 )
 
 # 仅在Windows且非GitHub Actions环境下复制DLL
@@ -71,18 +69,18 @@ if(WIN32 AND NOT DEFINED ENV{GITHUB_ACTIONS})
         foreach(QT_LIB Core Gui Widgets Multimedia Network)
             if(EXISTS "${QT_INSTALL_PATH}/Qt6${QT_LIB}.dll")
                 add_custom_command(TARGET MusicPlayer POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${QT_INSTALL_PATH}/Qt6${QT_LIB}.dll"
-                    "$<TARGET_FILE_DIR:MusicPlayer>")
+                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${QT_INSTALL_PATH}/Qt6${QT_LIB}.dll"
+                        "$<TARGET_FILE_DIR:MusicPlayer>")
             endif()
         endforeach()
 
         # 复制插件目录
         if(EXISTS "${QT_INSTALL_PATH}/../plugins")
             add_custom_command(TARGET MusicPlayer POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${QT_INSTALL_PATH}/../plugins"
-                "$<TARGET_FILE_DIR:MusicPlayer>/plugins")
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${QT_INSTALL_PATH}/../plugins"
+                    "$<TARGET_FILE_DIR:MusicPlayer>/plugins")
         endif()
     endif()
 endif()

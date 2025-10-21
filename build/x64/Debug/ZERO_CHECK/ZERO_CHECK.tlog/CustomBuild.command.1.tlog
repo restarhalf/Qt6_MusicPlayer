@@ -1,0 +1,10 @@
+^D:\C_C++PACKAGE\CLIONPROJECT\QT6_MUSICPLAYER\BUILD\CMAKEFILES\40B839729409230327AF7B5ACBE58340\GENERATE.STAMP.RULE
+setlocal
+D:\Cmake\bin\cmake.exe -SD:/C_C++Package/CLionProject/Qt6_MusicPlayer -BD:/C_C++Package/CLionProject/Qt6_MusicPlayer/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/C_C++Package/CLionProject/Qt6_MusicPlayer/build/MusicPlayer.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

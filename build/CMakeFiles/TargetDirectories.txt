@@ -1,0 +1,3 @@
+D:/C_C++Package/CLionProject/Qt6_MusicPlayer/build/CMakeFiles/MusicPlayer.dir
+D:/C_C++Package/CLionProject/Qt6_MusicPlayer/build/CMakeFiles/ALL_BUILD.dir
+D:/C_C++Package/CLionProject/Qt6_MusicPlayer/build/CMakeFiles/ZERO_CHECK.dir
