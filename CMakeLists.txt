@@ -33,9 +33,9 @@ find_package(taglib CONFIG REQUIRED)
 # 添加可执行文件
 add_executable(MusicPlayer
         main.cpp
+        musicplayer.ui
         musicplayer.cpp
         musicplayer.h
-        musicplayer.ui
         res.qrc
         app_icon.rc
 )

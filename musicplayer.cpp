@@ -8,6 +8,7 @@
 #include "ui_MusicPlayer.h"
 #include <QFileDialog>
 #include <QDirIterator>
+#include "QStandardItem"
 #include <QFileInfo>
 #include <QTimer>
 #include <QRegularExpression>
@@ -25,6 +26,7 @@
 #include <id3v2tag.h>
 #include <id3v2frame.h>
 #include <unsynchronizedlyricsframe.h>
+#include <QSortFilterProxyModel>
 
 namespace rsh
 {
@@ -66,6 +68,7 @@ namespace rsh
         {
             lrcmodel = new QStandardItemModel(this);
             musicmodel = new QStandardItemModel(this);
+            musicProxyModel = new MusicFilterProxyModel(this);
             player = new QMediaPlayer(this);
             audioOutput = new QAudioOutput(this);
 
@@ -113,7 +116,8 @@ namespace rsh
 
         if (ui->musiclist && musicmodel)
         {
-            ui->musiclist->setModel(musicmodel);
+            musicProxyModel->setSourceModel(musicmodel);
+            ui->musiclist->setModel(musicProxyModel);
             ui->musiclist->setSelectionMode(QAbstractItemView::SingleSelection);
         }
 
@@ -217,10 +221,19 @@ namespace rsh
         if (ui->voiBtn) {
             ui->voiBtn->setIcon(QIcon(":/images/voice.png"));
         }
-        if (ui->deleteBtn) {
-            ui->deleteBtn->setIcon(style()->standardIcon(QStyle::SP_TrashIcon));
-        }
         loadPlayerState();
+
+        // 连接更换背景按钮
+        connect(ui->changeBgBtn, &QPushButton::clicked, this, &MusicPlayer::ChangeBgBtn_clicked);
+
+        // 在构造函数结尾恢复自定义背景
+        QSettings settings("AnonSoyo", "MusicPlayer");
+        QString savedBg = settings.value("customBackgroundPath").toString();
+        if (!savedBg.isEmpty()) {
+            customBackgroundPath = savedBg;
+            this->setStyleSheet(""); // 清除主窗口QSS背景，交由代码控制
+            applyBackground(customBackgroundPath);
+        }
 
         m_isValid = true;
     }
@@ -252,7 +265,7 @@ namespace rsh
             playbackTimer = nullptr;
         }
 
-        // 断开所有信号连接，防止在销毁���程中触发回调
+        // 断开所有信号连接，防止在销毁过程中触发回调
         if (player)
         {
             disconnect(player, nullptr, this, nullptr);
@@ -325,10 +338,19 @@ namespace rsh
             // 检查文件路径是否已存在
             if (!existingFilePaths.contains(filePath))
             {
-                auto item = new QStandardItem(getMusicTitle(filePath));
+                QString title = getMusicTitle(filePath);
+                QString artist = getArtistName(filePath);
+                QString album = getAlbumName(filePath);
+                if (title.isEmpty()) {
+                    QFileInfo fileInfo(filePath);
+                    title = fileInfo.baseName();
+                }
+                auto item = new QStandardItem(title);
                 item->setData(filePath, Qt::UserRole + 1); // 存储完整文件路径
+                item->setData(artist, Qt::UserRole + 2);   // 存储歌手信息
+                item->setData(album, Qt::UserRole + 3);    // 存储专辑信息
                 musicmodel->appendRow(item);
-                existingFilePaths.insert(filePath); // 添加到已存在集合中
+                existingFilePaths.insert(filePath); // 添加到已存在集合
                 addedCount++;
             }
         }
@@ -362,7 +384,7 @@ namespace rsh
         // 加载歌词
         loadLyricsFromMetadata(filePath);
 
-        // 更新播放器信息和音乐显示信息
+        // 更新播放器信���和音乐显示信息
         updatePlayerInfo(filePath);
         updateMusicInfo(filePath); // 添加这行来更新音乐信息显示
 
@@ -584,7 +606,7 @@ namespace rsh
         // 直接隐藏，不使用动画（避免透明度效果�������扰）
         ui->voice->setVisible(false);
 
-        // 清除可能存在的透明度效果
+        // 清��可能存在的透明度效果
         QGraphicsOpacityEffect *effect = qobject_cast<QGraphicsOpacityEffect *>(ui->voice->graphicsEffect());
         if (effect)
         {
@@ -734,7 +756,7 @@ namespace rsh
             if (line.isEmpty())
                 continue;
 
-            // 提取歌词文本（移除时间标签）
+            // 提取歌词文本��移除时间标签）
             QString text = line;
             QRegularExpressionMatchIterator matches = timeRegex.globalMatch(line);
             while (matches.hasNext())
@@ -1546,8 +1568,17 @@ namespace rsh
             while (!in.atEnd()) {
                 QString filePath = in.readLine().trimmed();
                 if (!filePath.isEmpty() && QFile::exists(filePath)) {
-                    auto item = new QStandardItem(getMusicTitle(filePath));
-                    item->setData(filePath, Qt::UserRole + 1);
+                    QString title = getMusicTitle(filePath);
+                    QString artist = getArtistName(filePath);
+                    QString album = getAlbumName(filePath);
+                    if (title.isEmpty()) {
+                        QFileInfo fileInfo(filePath);
+                        title = fileInfo.baseName();
+                    }
+                    auto item = new QStandardItem(title);
+                    item->setData(filePath, Qt::UserRole + 1); // 存储完整文件路径
+                    item->setData(artist, Qt::UserRole + 2);   // 存储歌手信息
+                    item->setData(album, Qt::UserRole + 3);    // 存储专辑信息
                     musicmodel->appendRow(item);
                 }
             }
@@ -1814,7 +1845,7 @@ namespace rsh
 
         int paddingCount = calculatePaddingItemsCount();
 
-        // 在歌词列表开��添加空行
+        // 在歌词列表开���添加空行
         for (int i = 0; i < paddingCount; i++)
         {
             auto paddingItem = new QStandardItem("");
@@ -1888,4 +1919,85 @@ namespace rsh
                 break;
         }
     }
-}
+
+    void MusicPlayer::ChangeBgBtn_clicked()
+    {
+        QString filePath = QFileDialog::getOpenFileName(this, "选择背景图片", QDir::homePath(), "图片文件 (*.png *.jpg *.jpeg *.bmp)");
+        if (!filePath.isEmpty()) {
+            customBackgroundPath = filePath;
+            applyBackground(customBackgroundPath);
+            QSettings settings("AnonSoyo", "MusicPlayer");
+            settings.setValue("customBackgroundPath", customBackgroundPath);
+        }
+    }
+
+    void MusicPlayer::applyBackground(const QString& path) {
+        if (path.isEmpty()) {
+            setAutoFillBackground(false);
+            QPalette pal = palette();
+            pal.setBrush(QPalette::Window, Qt::NoBrush);
+            setPalette(pal);
+            update();
+            return;
+        }
+        QPixmap bg(path);
+        if (!bg.isNull()) {
+            QPalette pal = palette();
+            pal.setBrush(QPalette::Window, QBrush(bg.scaled(size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation)));
+            setPalette(pal);
+            setAutoFillBackground(true);
+            update();
+            qDebug() << "[DEBUG] 背景图片加载成功，已设置自适应背景";
+        } else {
+            qDebug() << "[DEBUG] 背景图片加载失败，路径:" << path;
+        }
+    }
+
+    // 重载 resizeEvent 以适配背景
+    void MusicPlayer::resizeEvent(QResizeEvent* event) {
+        QWidget::resizeEvent(event);
+        applyBackground(customBackgroundPath);
+    }
+
+    // 搜索文本变化槽函数
+    void MusicPlayer::onSearchTextChanged(const QString &text)
+    {
+        if (!musicProxyModel)
+            return;
+
+        musicProxyModel->setFilterFixedString(text);
+    }
+
+    MusicFilterProxyModel::MusicFilterProxyModel(QObject *parent)
+        : QSortFilterProxyModel(parent)
+    {
+        setFilterCaseSensitivity(Qt::CaseInsensitive);
+    }
+
+    bool MusicFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+    {
+        if (filterRegularExpression().pattern().isEmpty())
+            return true;
+
+        QModelIndex titleIndex = sourceModel()->index(sourceRow, 0, sourceParent);
+        QModelIndex artistIndex = sourceModel()->index(sourceRow, 0, sourceParent);
+        QModelIndex albumIndex = sourceModel()->index(sourceRow, 0, sourceParent);
+
+        // 检查标题（显示文本）
+        QString title = titleIndex.data(Qt::DisplayRole).toString();
+        if (title.contains(filterRegularExpression()))
+            return true;
+
+        // 检查歌手（UserRole + 2）
+        QString artist = artistIndex.data(Qt::UserRole + 2).toString();
+        if (artist.contains(filterRegularExpression()))
+            return true;
+
+        // 检查专辑（UserRole + 3）
+        QString album = albumIndex.data(Qt::UserRole + 3).toString();
+        if (album.contains(filterRegularExpression()))
+            return true;
+
+        return false;
+    }
+} // namespace rsh

@@ -5,7 +5,7 @@
 #ifndef MUSICPLAYER_H
 #define MUSICPLAYER_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include <QStandardItemModel>
 #include <QMediaPlayer>
 #include <QAudioOutput>
@@ -15,10 +15,22 @@
 #include <QEvent>
 #include <QCursor>
 #include <QSet>
+#include <QSortFilterProxyModel>
 
 namespace rsh {
 QT_BEGIN_NAMESPACE
 namespace Ui { class MusicPlayer; }
+
+class MusicFilterProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+public:
+    explicit MusicFilterProxyModel(QObject *parent = nullptr);
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+};
 
 class MusicPlayer : public QWidget {
 Q_OBJECT
@@ -40,6 +52,9 @@ public:
     void Lrc_clicked(const QModelIndex &index); // 歌词点击槽函数
     void DeleteBtn_clicked();
     void ModeBtn_clicked();
+    void ChangeBgBtn_clicked(); // 更换背景按钮槽函数
+
+    void onSearchTextChanged(const QString &text); // 搜索文本变化槽函数
 
     // Qt6兼容的槽函数
     void onDurationChanged(qint64 duration);
@@ -70,6 +85,7 @@ private:
     Ui::MusicPlayer *ui;
     QStandardItemModel *lrcmodel = nullptr;
     QStandardItemModel *musicmodel = nullptr;
+    MusicFilterProxyModel *musicProxyModel = nullptr;
     QMediaPlayer *player = nullptr;
     QAudioOutput *audioOutput = nullptr;
     bool isSliderBeingDragged = false; // 跟踪是否正在拖动进度条
@@ -147,9 +163,14 @@ private:
     void updateVolumeIcon(int volume);
     void showVolumeSlider(); // 显示音量滑块
 
+    // 新增：自适应背景图片方法
+    void applyBackground(const QString& path);
+
 protected:
     // 事件过滤器，处理鼠标悬停事件
     bool eventFilter(QObject *obj, QEvent *event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    QString customBackgroundPath; // 用户自定义背景路径
 };
 } // rsh
 
