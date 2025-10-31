@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>rsh::MusicPlayer</class>
+ <widget class="QWidget" name="rsh::MusicPlayer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1488</width>
+    <height>820</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="font">
+   <font>
+    <family>Microsoft YaHei UI</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>MusicPlayer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="res.qrc">
+    <normaloff>:/images/app_icon.ico</normaloff>:/images/app_icon.ico</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QWidget {
+    background-image: url(:/images/background.png);
+    color: white;
+    font-family: "Microsoft YaHei UI", "幼圆";
+}
+QMenuBar {
+    background: rgba(0,0,0,0.2);
+    color: white;
+    border-radius: 8px;
+}
+QMenuBar::item:selected {
+    background: rgba(74,144,226,0.3);
+}
+QLineEdit {
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: white;
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+QLineEdit:focus {
+    border: 2px solid #4A90E2;
+    background: rgba(255,255,255,0.25);
+}
+QPushButton {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4A90E2, stop:1 #EC4141);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 16px;
+}
+QPushButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #EC4141, stop:1 #4A90E2);
+}
+QPushButton:pressed {
+    background: #D63031;
+}
+QLabel {
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    background: transparent;
+    padding: 2px;
+}
+QSlider::groove:horizontal {
+    border: none;
+    height: 6px;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #EC4141, stop:1 #4A90E2);
+    border-radius: 3px;
+}
+QSlider::handle:horizontal {
+    background: #4A90E2;
+    border: none;
+    width: 16px;
+    height: 16px;
+    margin: -5px 0;
+    border-radius: 8px;
+}
+QSlider::handle:horizontal:hover {
+    background: #EC4141;
+    border: 2px solid #4A90E2;
+}
+QSlider::sub-page:horizontal {
+    background: #EC4141;
+    border-radius: 3px;
+}
+QSlider::add-page:horizontal {
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
+}
+QListView {
+    background: rgba(0,0,0,0.15);
+    border-radius: 12px;
+    color: white;
+    selection-background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4A90E2, stop:1 #EC4141);
+    outline: none;
+    padding: 8px;
+}
+QListView::item {
+    padding: 10px;
+    border-radius: 8px;
+    margin: 2px;
+}
+QListView::item:selected {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4A90E2, stop:1 #EC4141);
+    color: white;
+    font-weight: bold;
+}
+QListView::item:hover {
+    background: rgba(255,255,255,0.10);
+}
+QScrollBar:vertical {
+    background: rgba(0,0,0,0.10);
+    width: 8px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical {
+    background: #4A90E2;
+    border-radius: 4px;
+    min-height: 20px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #EC4141;
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: none;
+}
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QSplitter" name="splitter_2">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <widget class="QSplitter" name="splitter">
+      <property name="styleSheet">
+       <string notr="true">background:transparent</string>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Orientation::Vertical</enum>
+      </property>
+      <widget class="QLineEdit" name="searchEdit">
+       <property name="placeholderText">
+        <string>搜索音乐...</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit {
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: white;
+    padding: 8px 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    font-size: 14px;
+}
+QLineEdit:focus {
+    border: 2px solid #4A90E2;
+    background: rgba(255,255,255,0.25);
+}</string>
+       </property>
+      </widget>
+      <widget class="QListView" name="musiclist">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>600</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">/* 列表视图样式 */
+QListView {
+	background: rgba(0, 0, 0, 120);
+	border: 2px solid rgba(255, 255, 255, 50);
+	border-radius: 10px;
+	color: white;
+	selection-background-color: rgba(74, 144, 226, 180);
+	outline: none;
+	padding: 5px;
+}
+
+QListView::item {
+	padding: 8px;
+	border-bottom: 1px solid rgba(255, 255, 255, 30);
+	border-radius: 5px;
+	margin: 2px;
+}
+
+QListView::item:selected {
+	background: rgba(74, 144, 226, 200);
+	color: white;
+}
+
+QListView::item:hover {
+	background: rgba(255, 255, 255, 50);
+}
+</string>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="songName">
+       <property name="styleSheet">
+        <string notr="true">/* 标签样式 */
+QLabel {
+	color: black;
+	font-weight: bold;
+	background: transparent;
+	padding: 2px;
+}</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="now">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>0:00</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="xiegang">
+          <property name="minimumSize">
+           <size>
+            <width>10</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>10</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>/</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="full">
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>0:00</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSlider" name="bofangtiao">
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="invertedAppearance">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSlider" name="voice">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>50</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="dirBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/dir.png</normaloff>:/images/dir.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="preBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/prew.png</normaloff>:/images/prew.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="startBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/pause.png</normaloff>:/images/pause.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="nextBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/next.png</normaloff>:/images/next.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="voiBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/voice.png</normaloff>:/images/voice.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="deleteBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>删除</string>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="modeBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>顺序</string>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="changeBgBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+          <property name="icon">
+           <iconset resource="res.qrc">
+            <normaloff>:/images/background.png</normaloff>:/images/background.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>更换背景</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton { background: transparent; border: none; border-radius: 8px; padding: 5px; }
+QPushButton:hover { background: rgba(255,255,255,0.15); border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); }
+QPushButton:pressed { background: rgba(255,255,255,0.3); border-radius: 8px; border: 2px solid rgba(74,144,226,0.6); }
+</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QListView" name="lrclist">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>1100</width>
+        <height>820</height>
+       </size>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/* 歌词列表视图优化样式 */
+QListView {
+	background: rgba(0, 0, 0, 150);
+	border: 2px solid rgba(74, 144, 226, 100);
+	border-radius: 15px;
+	color: white;
+	selection-background-color: rgba(74, 144, 226, 200);
+	outline: none;
+	padding: 15px;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+QListView::item {
+	padding: 12px 8px;
+	border: none;
+	border-radius: 8px;
+	margin: 2px 0px;
+	background: transparent;
+	color: rgba(255, 255, 255, 180);
+	text-align: center;
+}
+
+QListView::item:hover {
+	background: rgba(255, 255, 255, 20);
+	color: rgba(255, 255, 255, 220);
+}
+
+QListView::item:selected {
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4A90E2, stop:1 #EC4141);
+	color: white;
+	font-weight: bold;
+}
+
+/* 滚动条美化 */
+QScrollBar:vertical {
+	background: rgba(0, 0, 0, 80);
+	width: 8px;
+	border-radius: 4px;
+	margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+	background: rgba(74, 144, 226, 150);
+	border-radius: 4px;
+	min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+	background: rgba(74, 144, 226, 200);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+	height: 0px;
+	background: none;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+	background: none;
+}
+</string>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+      </property>
+      <property name="tabKeyNavigation">
+       <bool>true</bool>
+      </property>
+      <property name="showDropIndicator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="movement">
+       <enum>QListView::Movement::Snap</enum>
+      </property>
+      <property name="viewMode">
+       <enum>QListView::ViewMode::ListMode</enum>
+      </property>
+      <property name="itemAlignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>musiclist</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>musicName_clicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>231</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bofangtiao</sender>
+   <signal>sliderReleased()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>Audio_release()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>423</x>
+     <y>563</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>459</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bofangtiao</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>Audio_valueChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>315</x>
+     <y>563</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bofangtiao</sender>
+   <signal>sliderPressed()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>Audio_pressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>377</x>
+     <y>563</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>voiBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>VoiceBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>795</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>startBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>StartBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>477</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>voice</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>Voice_valueChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>954</x>
+     <y>607</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>nextBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>NextBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>636</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>PrewBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>334</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>421</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dirBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>DirBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>59</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>130</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lrclist</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>musicName_clicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1020</x>
+     <y>241</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lrclist</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>Lrc_clicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>973</x>
+     <y>521</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>520</x>
+     <y>581</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>deleteBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>DeleteBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>850</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>modeBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>ModeBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>900</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>searchEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>onSearchTextChanged(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>DirBtn_clicked()</slot>
+  <slot>musicName_clicked(QModelIndex)</slot>
+  <slot>StartBtn_clicked()</slot>
+  <slot>PauseBtn_clicked()</slot>
+  <slot>PrewBtn_clicked()</slot>
+  <slot>NextBtn_clicked()</slot>
+  <slot>VoiceBtn_clicked()</slot>
+  <slot>Audio_release()</slot>
+  <slot>Audio_pressed()</slot>
+  <slot>Audio_valueChanged(int)</slot>
+  <slot>Voice_valueChanged(int)</slot>
+  <slot>Lrc_clicked(QModelIndex)</slot>
+  <slot>DeleteBtn_clicked()</slot>
+  <slot>ModeBtn_clicked()</slot>
+  <slot>onSearchTextChanged(QString)</slot>
+ </slots>
+</ui>
