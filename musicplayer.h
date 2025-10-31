@@ -39,6 +39,7 @@ public:
     void Voice_valueChanged(int value); // 音量调节
     void Lrc_clicked(const QModelIndex &index); // 歌词点击槽函数
     void DeleteBtn_clicked();
+    void ModeBtn_clicked();
 
     // Qt6兼容的槽函数
     void onDurationChanged(qint64 duration);

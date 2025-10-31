@@ -604,6 +604,28 @@ QLabel {
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="modeBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>顺序</string>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -920,6 +942,22 @@ QScrollBar::sub-page:vertical {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>modeBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>ModeBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>900</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>DirBtn_clicked()</slot>
@@ -935,5 +973,6 @@ QScrollBar::sub-page:vertical {
   <slot>Voice_valueChanged(int)</slot>
   <slot>Lrc_clicked(QModelIndex)</slot>
   <slot>DeleteBtn_clicked()</slot>
+  <slot>ModeBtn_clicked()</slot>
  </slots>
 </ui>

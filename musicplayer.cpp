@@ -1471,7 +1471,7 @@ namespace rsh
             player->setPosition(targetTimestamp);
         }
 
-        // 更新当前歌词索引
+        // 更新当前歌词��引
         currentLyricIndex = actualLyricIndex;
         currentIndex = -1; // 重置双歌词索引
 
@@ -1864,5 +1864,28 @@ namespace rsh
 
         // 保存更新后的列表
         savePlayerState();
+    }
+
+    void MusicPlayer::ModeBtn_clicked()
+    {
+        // 循环播放模式
+        switch (currentPlaybackMode) {
+            case Sequential:
+                currentPlaybackMode = Loop;
+                ui->modeBtn->setText("单曲循环");
+                break;
+            case Loop:
+                currentPlaybackMode = LoopAll;
+                ui->modeBtn->setText("列表循环");
+                break;
+            case LoopAll:
+                currentPlaybackMode = Random;
+                ui->modeBtn->setText("随机播放");
+                break;
+            case Random:
+                currentPlaybackMode = Sequential;
+                ui->modeBtn->setText("顺序播放");
+                break;
+        }
     }
 }
