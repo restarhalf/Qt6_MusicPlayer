@@ -201,6 +201,25 @@ namespace rsh
 
         updateVolumeIcon(50);
 
+        // 设置按钮图标为Windows内置图标
+        if (ui->dirBtn) {
+            ui->dirBtn->setIcon(QIcon(":/images/dir.png"));
+        }
+        if (ui->preBtn) {
+            ui->preBtn->setIcon(QIcon(":/images/prew.png"));
+        }
+        if (ui->startBtn) {
+            ui->startBtn->setIcon(QIcon(":/images/pause.png"));
+        }
+        if (ui->nextBtn) {
+            ui->nextBtn->setIcon(QIcon(":/images/next.png"));
+        }
+        if (ui->voiBtn) {
+            ui->voiBtn->setIcon(QIcon(":/images/voice.png"));
+        }
+        if (ui->deleteBtn) {
+            ui->deleteBtn->setIcon(style()->standardIcon(QStyle::SP_TrashIcon));
+        }
         loadPlayerState();
 
         m_isValid = true;
@@ -552,7 +571,7 @@ namespace rsh
         // 显示音量滑块
         ui->voice->setVisible(true);
 
-        // 启动隐藏定时器
+        // 启动隐��定时器
         volumeHideTimer->start();
     }
 
@@ -1486,6 +1505,22 @@ namespace rsh
     // 保持播放器状态
     void MusicPlayer::savePlayerState()
     {
+        // 保存歌曲列表到文件
+        QFile file("music_list.dat");
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream out(&file);
+            for (int i = 0; i < musicmodel->rowCount(); ++i) {
+                auto item = musicmodel->item(i);
+                if (item) {
+                    QString filePath = item->data(Qt::UserRole + 1).toString();
+                    if (!filePath.isEmpty()) {
+                        out << filePath << "\n";
+                    }
+                }
+            }
+            file.close();
+        }
+
         // 这里可以保存到配置文件或注册表
         // 包括：当前播放歌曲、播放位置、音量、播放模式等
 
@@ -1504,6 +1539,21 @@ namespace rsh
     // 加载播放器状态
     void MusicPlayer::loadPlayerState()
     {
+        // 加载歌曲列表
+        QFile file("music_list.dat");
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            while (!in.atEnd()) {
+                QString filePath = in.readLine().trimmed();
+                if (!filePath.isEmpty() && QFile::exists(filePath)) {
+                    auto item = new QStandardItem(getMusicTitle(filePath));
+                    item->setData(filePath, Qt::UserRole + 1);
+                    musicmodel->appendRow(item);
+                }
+            }
+            file.close();
+        }
+
         // 从配置文件或注册表加载播放器状态
 
         // 例：从QSettings加载
@@ -1764,7 +1814,7 @@ namespace rsh
 
         int paddingCount = calculatePaddingItemsCount();
 
-        // 在歌词列表开头添加空行
+        // 在歌词列表开��添加空行
         for (int i = 0; i < paddingCount; i++)
         {
             auto paddingItem = new QStandardItem("");
@@ -1787,5 +1837,32 @@ namespace rsh
         {
             currentLyricIndex += paddingCount;
         }
+    }
+    void MusicPlayer::DeleteBtn_clicked()
+    {
+        if (!m_isValid || !ui || !ui->musiclist || !musicmodel)
+            return;
+
+        auto currentIndex = ui->musiclist->currentIndex();
+        if (!currentIndex.isValid())
+            return;
+
+        // 获取当前播放的歌曲索引
+        QString currentFilePath = currentIndex.data(Qt::UserRole + 1).toString();
+
+        // 删除选中的歌曲
+        musicmodel->removeRow(currentIndex.row());
+
+        // 如果删除的是当前播放的歌曲，停止播放
+        if (player && player->playbackState() == QMediaPlayer::PlayingState &&
+            currentFilePath == player->source().toString().remove("file:///"))
+        {
+            player->stop();
+            ui->startBtn->setIcon(QIcon(":/images/pause.png"));
+            ui->songName->setText("请选择歌曲播放");
+        }
+
+        // 保存更新后的列表
+        savePlayerState();
     }
 }

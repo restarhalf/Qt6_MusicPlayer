@@ -146,7 +146,7 @@ QSlider::add-page:vertical {
 	border-radius: 2px;
 }
 
-/* 列表视图样式 */
+/* 列��视图样式 */
 QListView {
 	background: rgba(0, 0, 0, 120);
 	border: 2px solid rgba(255, 255, 255, 50);
@@ -582,6 +582,28 @@ QLabel {
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="deleteBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>删除</string>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>45</width>
+            <height>45</height>
+           </size>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -882,6 +904,22 @@ QScrollBar::sub-page:vertical {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>deleteBtn</sender>
+   <signal>clicked()</signal>
+   <receiver>rsh::MusicPlayer</receiver>
+   <slot>DeleteBtn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>850</x>
+     <y>693</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>550</x>
+     <y>241</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>DirBtn_clicked()</slot>
@@ -896,5 +934,6 @@ QScrollBar::sub-page:vertical {
   <slot>Audio_valueChanged(int)</slot>
   <slot>Voice_valueChanged(int)</slot>
   <slot>Lrc_clicked(QModelIndex)</slot>
+  <slot>DeleteBtn_clicked()</slot>
  </slots>
 </ui>
